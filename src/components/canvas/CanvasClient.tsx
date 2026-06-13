@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -20,12 +20,22 @@ import {
   Panel
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { ArrowLeft, RefreshCw, Save, HardDriveDownload } from "lucide-react";
+import { 
+  ArrowLeft, 
+  RefreshCw, 
+  Save, 
+  HardDriveDownload, 
+  AlertTriangle, 
+  ChevronLeft, 
+  ChevronRight,
+  Focus
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import CustomNode, { CustomNodeData } from "./nodes/CustomNode";
+import CustomNode from "./nodes/CustomNode";
 import CanvasToolbar from "./CanvasToolbar";
 import { updateCanvas } from "@/lib/storage";
+import { detectDeadlineConflicts, ConflictInfo } from "@/lib/conflictDetector";
 
 // Define node types outside the component to prevent re-creation on render
 const nodeTypes = {
@@ -51,6 +61,9 @@ function FlowEditor({ canvas }: CanvasClientProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(canvas.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(canvas.edges);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "offline">("saved");
+  
+  // Conflict panel collapse state
+  const [isConflictsOpen, setIsConflictsOpen] = useState(false);
 
   // Track if initial load is complete to avoid autosaving initial data
   const isLoadedRef = useRef(false);
@@ -202,6 +215,63 @@ function FlowEditor({ canvas }: CanvasClientProps) {
     }
   };
 
+  // Real-time conflict computation
+  const conflicts = useMemo(() => {
+    return detectDeadlineConflicts(nodes, edges);
+  }, [nodes, edges]);
+
+  // Inject conflicts into nodes for rendering inside CustomNode
+  const nodesWithConflicts = useMemo(() => {
+    return nodes.map(node => {
+      const nodeConflicts = conflicts[node.id] || [];
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          conflicts: nodeConflicts
+        }
+      };
+    });
+  }, [nodes, conflicts]);
+
+  // Flattened list of conflicts for the overlay sidebar
+  const conflictsList = useMemo(() => {
+    const list: (ConflictInfo & { nodeTitle: string })[] = [];
+    Object.entries(conflicts).forEach(([nodeId, items]) => {
+      const node = nodes.find(n => n.id === nodeId);
+      const title = String((node?.data as any)?.title || "Untitled Deadline");
+      items.forEach(item => {
+        list.push({
+          ...item,
+          nodeTitle: title
+        });
+      });
+    });
+    return list;
+  }, [conflicts, nodes]);
+
+  // Quick navigation: Center viewport on warning node
+  const handleFocusNode = useCallback((nodeId: string) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    // Highlight node selection
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      selected: n.id === nodeId
+    })));
+
+    // Zoom and center
+    const x = node.position.x;
+    const y = node.position.y;
+    reactFlowInstance.setCenter(x + 144, y + 100, {
+      zoom: 1.1,
+      duration: 800
+    });
+    
+    toast.info(`Centered on: "${node.data.title || 'Untitled'}"`);
+  }, [nodes, setNodes, reactFlowInstance]);
+
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
       {/* Top Header Controls Bar */}
@@ -220,6 +290,18 @@ function FlowEditor({ canvas }: CanvasClientProps) {
 
         {/* Sync Info Header */}
         <div className="flex items-center gap-2">
+          {/* Conflict Warning Indicator Button */}
+          {conflictsList.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsConflictsOpen(!isConflictsOpen)}
+              className="text-xs font-mono h-8 border-red-950/60 hover:border-red-900/80 bg-red-950/30 text-red-400 hover:text-red-300 gap-1.5 animate-pulse"
+            >
+              <AlertTriangle className="w-4 h-4" /> {conflictsList.length} Conflict{conflictsList.length > 1 ? "s" : ""}
+            </Button>
+          )}
+          
           <Button
             size="sm"
             variant="ghost"
@@ -234,7 +316,7 @@ function FlowEditor({ canvas }: CanvasClientProps) {
       {/* React Flow Infinite Canvas Container */}
       <div className="flex-1 w-full relative">
         <ReactFlow
-          nodes={nodes}
+          nodes={nodesWithConflicts}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -269,6 +351,51 @@ function FlowEditor({ canvas }: CanvasClientProps) {
 
         {/* Floating Spawner Overlay Toolbar */}
         <CanvasToolbar saveStatus={saveStatus} onManualSave={handleManualSave} />
+
+        {/* Collapsible Conflict Panel Sidebar */}
+        {conflictsList.length > 0 && isConflictsOpen && (
+          <div className="absolute top-4 left-4 z-30 w-80 bg-card/90 border border-red-900/40 backdrop-blur-md rounded-2xl shadow-2xl p-4 flex flex-col max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between border-b border-red-950/30 pb-2.5 mb-3 shrink-0">
+              <span className="font-mono text-xs font-bold text-red-400 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4" /> Schedule Warnings
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setIsConflictsOpen(false)}
+                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 font-mono text-[10.5px]">
+              {conflictsList.map((c, idx) => (
+                <div key={idx} className="p-3 border border-red-950/40 bg-red-950/5 rounded-xl space-y-2">
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-red-400 font-semibold uppercase tracking-wider text-[9px] bg-red-950/40 border border-red-900/30 px-1 rounded">
+                      {c.type.replace("-", " ")}
+                    </span>
+                    <button
+                      onClick={() => handleFocusNode(c.nodeId)}
+                      className="text-muted-foreground hover:text-emerald-400 flex items-center gap-0.5"
+                      title="Focus Node"
+                    >
+                      <Focus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-foreground leading-normal font-sans text-xs">
+                    {c.message}
+                  </p>
+                  <div className="border-t border-red-950/30 pt-1.5 mt-1 text-[10px] text-muted-foreground leading-relaxed italic">
+                    <strong className="text-red-400/80 font-bold block mb-0.5">Suggestion:</strong>
+                    {c.rescheduleSuggestion}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

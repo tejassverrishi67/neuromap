@@ -34,6 +34,8 @@ export type CustomNodeData = {
   dueDate?: string;
   warningThreshold?: number;
   tags?: string[];
+  completedAt?: string;
+  conflicts?: any[];
 };
 
 export type CustomNodeProps = NodeProps<Node<CustomNodeData>>;
@@ -86,6 +88,13 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0);
 
+    const isNowCompleted = editStatus === "done" && data.status !== "done";
+    const completedAt = isNowCompleted 
+      ? new Date().toISOString() 
+      : editStatus !== "done" 
+        ? undefined 
+        : data.completedAt;
+
     updateNodeData({
       title: editTitle.trim(),
       content: editContent.trim(),
@@ -94,7 +103,8 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
       progress: Number(editProgress),
       dueDate: editDueDate,
       warningThreshold: Number(editWarningThreshold),
-      tags: tagsArray
+      tags: tagsArray,
+      completedAt
     });
 
     setIsEditOpen(false);
@@ -200,6 +210,11 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
           <span className="text-[10px] font-bold tracking-wider font-mono uppercase text-muted-foreground">
             {config.label}
           </span>
+          {data.conflicts && data.conflicts.length > 0 && (
+            <Badge variant="outline" className="h-4 px-1 flex gap-0.5 border-red-900/60 bg-red-950/40 text-red-400 font-mono text-[8px] animate-pulse select-none">
+              <AlertTriangle className="w-2.5 h-2.5" /> Alert
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-1 nodrag">
           {/* Edit Dialog Button */}
@@ -387,6 +402,23 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
           )}
         </div>
 
+        {/* Dynamic conflict alerts rendering */}
+        {data.conflicts && data.conflicts.length > 0 && (
+          <div className="border border-red-900/40 bg-red-950/15 p-2 rounded-lg space-y-1 nodrag">
+            {data.conflicts.map((c: any, i: number) => (
+              <div key={i} className="flex gap-1.5 items-start text-[9px] text-red-300 leading-snug">
+                <AlertTriangle className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">{c.message}</span>
+                  <span className="block text-[8.5px] text-muted-foreground/80 italic mt-0.5">
+                    {c.rescheduleSuggestion}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* VARIANT-SPECIFIC FOOTER INFO */}
         
         {/* GOAL VARIANT RENDERING */}
@@ -413,14 +445,15 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
 
         {/* TASK VARIANT RENDERING */}
         {data.nodeType === "task" && (
-          <div className="flex items-center justify-between border-t border-border/40 pt-2.5">
+          <div className="flex items-center justify-between border-t border-border/40 pt-2.5 font-mono">
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={data.status === "done"}
                 onChange={(e) => {
                   const newStatus = e.target.checked ? "done" : "todo";
-                  updateNodeData({ status: newStatus });
+                  const completedAt = e.target.checked ? new Date().toISOString() : undefined;
+                  updateNodeData({ status: newStatus, completedAt });
                   toast.success(`Task marked as ${newStatus}`);
                 }}
                 className="w-4 h-4 accent-emerald-500 rounded border-border cursor-pointer nodrag"

@@ -10,7 +10,8 @@ import {
   Settings, 
   ChevronLeft, 
   ChevronRight,
-  BrainCircuit
+  BrainCircuit,
+  LayoutGrid
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,11 @@ export default function Sidebar() {
       name: "Brain Dump",
       href: "/braindump",
       icon: Inbox,
+    },
+    {
+      name: "Eisenhower",
+      href: "/eisenhower",
+      icon: LayoutGrid,
     },
     {
       name: "Visual Canvas",
