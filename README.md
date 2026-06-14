@@ -151,7 +151,7 @@ https://neuromap-sooty.vercel.app/
 
 ### Eisenhower Matrix
 
-![Eisenhower Matrix](docs/eisenhower.png)
+![Eisenhower Matrix](docs/Eisenhower.png)
 
 ### Light Mode
 
