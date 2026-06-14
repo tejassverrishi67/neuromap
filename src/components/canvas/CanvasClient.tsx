@@ -39,6 +39,13 @@ import CanvasToolbar from "./CanvasToolbar";
 import { updateCanvas, getCanvasById } from "@/lib/storage";
 import { detectDeadlineConflicts, ConflictInfo } from "@/lib/conflictDetector";
 import { useTheme } from "next-themes";
+import {
+  globalCanvasHistory,
+  cloneSnapshot,
+  isStateDifferent,
+  HistorySnapshot,
+  CanvasHistory
+} from "@/lib/historyStore";
 
 // Define node types outside the component to prevent re-creation on render
 const nodeTypes = {
@@ -68,9 +75,170 @@ function FlowEditor({ canvas }: CanvasClientProps) {
   }, []);
 
   const currentTheme = mounted ? resolvedTheme : "dark";
+  const minimapMaskColor = currentTheme === "dark" ? "rgba(12, 12, 14, 0.7)" : "rgba(240, 240, 243, 0.7)";
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(canvas.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(canvas.edges);
+
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const isPerformingUndoRedoRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const dragStartSnapshotRef = useRef<HistorySnapshot | null>(null);
+
+  // Initialize history stack
+  const historyRef = useRef<CanvasHistory>({
+    past: [],
+    present: { nodes: canvas.nodes, edges: canvas.edges },
+    future: []
+  });
+
+  // Synchronize history from/to globalCanvasHistory
+  useEffect(() => {
+    if (globalCanvasHistory[canvas._id]) {
+      historyRef.current = globalCanvasHistory[canvas._id];
+    } else {
+      globalCanvasHistory[canvas._id] = historyRef.current;
+    }
+    setCanUndo(historyRef.current.past.length > 0);
+    setCanRedo(historyRef.current.future.length > 0);
+  }, [canvas._id]);
+
+  const pushHistorySnapshot = useCallback((nextState: HistorySnapshot) => {
+    if (isPerformingUndoRedoRef.current) return;
+
+    const history = historyRef.current;
+    if (isStateDifferent(history.present, nextState)) {
+      history.past = [...history.past, cloneSnapshot(history.present)].slice(-50);
+      history.present = cloneSnapshot(nextState);
+      history.future = [];
+
+      setCanUndo(history.past.length > 0);
+      setCanRedo(false);
+    }
+  }, []);
+
+  const pushHistorySnapshotWithStart = useCallback((startState: HistorySnapshot, endState: HistorySnapshot) => {
+    if (isPerformingUndoRedoRef.current) return;
+
+    const history = historyRef.current;
+    history.past = [...history.past, cloneSnapshot(startState)].slice(-50);
+    history.present = cloneSnapshot(endState);
+    history.future = [];
+
+    setCanUndo(history.past.length > 0);
+    setCanRedo(false);
+  }, []);
+
+  const undo = useCallback(() => {
+    const history = historyRef.current;
+    if (history.past.length === 0) return;
+
+    isPerformingUndoRedoRef.current = true;
+
+    const currentSnapshot = cloneSnapshot(history.present);
+    const previousSnapshot = history.past.pop()!;
+
+    history.future.unshift(currentSnapshot);
+    history.present = cloneSnapshot(previousSnapshot);
+
+    setNodes(previousSnapshot.nodes);
+    setEdges(previousSnapshot.edges);
+
+    setCanUndo(history.past.length > 0);
+    setCanRedo(history.future.length > 0);
+
+    isPerformingUndoRedoRef.current = false;
+    toast.success("Undone change");
+  }, [setNodes, setEdges]);
+
+  const redo = useCallback(() => {
+    const history = historyRef.current;
+    if (history.future.length === 0) return;
+
+    isPerformingUndoRedoRef.current = true;
+
+    const nextSnapshot = history.future.shift()!;
+    history.past.push(cloneSnapshot(history.present));
+    history.present = cloneSnapshot(nextSnapshot);
+
+    setNodes(nextSnapshot.nodes);
+    setEdges(nextSnapshot.edges);
+
+    setCanUndo(history.past.length > 0);
+    setCanRedo(history.future.length > 0);
+
+    isPerformingUndoRedoRef.current = false;
+    toast.success("Redone change");
+  }, [setNodes, setEdges]);
+
+  // Track dragging operation
+  const onNodeDragStart = useCallback(() => {
+    isDraggingRef.current = true;
+    dragStartSnapshotRef.current = {
+      nodes: nodes.map(n => ({ ...n })),
+      edges: edges.map(e => ({ ...e }))
+    };
+  }, [nodes, edges]);
+
+  const onNodeDragStop = useCallback(() => {
+    isDraggingRef.current = false;
+    if (dragStartSnapshotRef.current) {
+      const isDiff = isStateDifferent(dragStartSnapshotRef.current, { nodes, edges });
+      if (isDiff) {
+        pushHistorySnapshotWithStart(dragStartSnapshotRef.current, { nodes, edges });
+      }
+      dragStartSnapshotRef.current = null;
+    }
+  }, [nodes, edges, pushHistorySnapshotWithStart]);
+
+  // Hook nodes and edges changes for other actions (node edits, type conversion, additions, deletions, connects)
+  useEffect(() => {
+    if (!isLoadedRef.current) return;
+    if (isPerformingUndoRedoRef.current) return;
+    if (isDraggingRef.current) return;
+
+    pushHistorySnapshot({ nodes, edges });
+  }, [nodes, edges, pushHistorySnapshot]);
+
+  // Keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === "INPUT" ||
+          activeEl.tagName === "TEXTAREA" ||
+          (activeEl as HTMLElement).contentEditable === "true")
+      ) {
+        return;
+      }
+
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+      if (modifier) {
+        if (e.key.toLowerCase() === "z") {
+          e.preventDefault();
+          if (isMac && e.shiftKey) {
+            redo();
+          } else {
+            undo();
+          }
+        } else if (e.key.toLowerCase() === "y" && !isMac) {
+          e.preventDefault();
+          redo();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [undo, redo]);
+
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "offline">("saved");
   
   // Conflict panel collapse state
@@ -224,7 +392,7 @@ function FlowEditor({ canvas }: CanvasClientProps) {
       });
       setSaveStatus("saved");
       toast.success("Canvas successfully synced to database.");
-    } catch (err) {
+    } catch {
       setSaveStatus("offline");
       toast.error("Could not sync to cloud database. Work is cached locally.");
     }
@@ -398,11 +566,11 @@ function FlowEditor({ canvas }: CanvasClientProps) {
                       description: canvasDesc.trim()
                     });
                     toast.success("Workspace properties updated");
-                  } catch (e) {
+                  } catch {
                     toast.error("Failed to save workspace properties");
                   }
                 }}
-                className="text-xs font-mono text-emerald-400 hover:text-emerald-300"
+                className="text-xs font-mono text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300"
               >
                 Save
               </Button>
@@ -427,7 +595,7 @@ function FlowEditor({ canvas }: CanvasClientProps) {
               size="sm"
               variant="outline"
               onClick={() => setIsConflictsOpen(!isConflictsOpen)}
-              className="text-xs font-mono h-8 border-red-950/60 hover:border-red-900/80 bg-red-950/30 text-red-400 hover:text-red-300 gap-1.5 animate-pulse"
+              className="text-xs font-mono h-8 border-urgent-border hover:border-urgent-text bg-urgent-bg text-urgent-text gap-1.5 animate-pulse"
             >
               <AlertTriangle className="w-4 h-4" /> {conflictsList.length} Conflict{conflictsList.length > 1 ? "s" : ""}
             </Button>
@@ -457,7 +625,7 @@ function FlowEditor({ canvas }: CanvasClientProps) {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 toast.success("Canvas exported successfully!");
-              } catch (e) {
+              } catch {
                 toast.error("Failed to export canvas");
               }
             }}
@@ -510,6 +678,8 @@ function FlowEditor({ canvas }: CanvasClientProps) {
           zoomOnDoubleClick={false}
           panActivationKeyCode="Space"
           onNodesDelete={onNodesDelete}
+          onNodeDragStart={onNodeDragStart}
+          onNodeDragStop={onNodeDragStop}
         >
           <Background color="#10b981" gap={20} size={1} />
           <Controls showInteractive={false} className="left-4 bottom-4 md:left-4" />
@@ -528,19 +698,26 @@ function FlowEditor({ canvas }: CanvasClientProps) {
                   return "oklch(0.5 0.15 280)";
               }
             }}
-            maskColor="rgba(12, 12, 14, 0.7)"
+            maskColor={minimapMaskColor}
             className="hidden md:block !bg-card border border-border rounded-xl shadow-2xl"
           />
         </ReactFlow>
 
         {/* Floating Spawner Overlay Toolbar */}
-        <CanvasToolbar saveStatus={saveStatus} onManualSave={handleManualSave} />
+        <CanvasToolbar
+          saveStatus={saveStatus}
+          onManualSave={handleManualSave}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
+        />
 
         {/* Collapsible Conflict Panel Sidebar */}
         {conflictsList.length > 0 && isConflictsOpen && (
-          <div className="absolute top-4 left-4 z-30 w-80 bg-card/90 border border-red-900/40 backdrop-blur-md rounded-2xl shadow-2xl p-4 flex flex-col max-h-[80vh] overflow-hidden">
-            <div className="flex items-center justify-between border-b border-red-950/30 pb-2.5 mb-3 shrink-0">
-              <span className="font-mono text-xs font-bold text-red-400 flex items-center gap-1.5">
+          <div className="absolute top-4 left-4 z-30 w-80 bg-card/90 border border-urgent-border backdrop-blur-md rounded-2xl shadow-2xl p-4 flex flex-col max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between border-b border-urgent-border pb-2.5 mb-3 shrink-0">
+              <span className="font-mono text-xs font-bold text-urgent-text flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4" /> Schedule Warnings
               </span>
               <Button
@@ -555,14 +732,14 @@ function FlowEditor({ canvas }: CanvasClientProps) {
             
             <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 font-mono text-[10.5px]">
               {conflictsList.map((c, idx) => (
-                <div key={idx} className="p-3 border border-red-950/40 bg-red-950/5 rounded-xl space-y-2">
+                <div key={idx} className="p-3 border border-urgent-border bg-urgent-bg rounded-xl space-y-2">
                   <div className="flex justify-between items-start gap-2">
-                    <span className="text-red-400 font-semibold uppercase tracking-wider text-[9px] bg-red-950/40 border border-red-900/30 px-1 rounded">
+                    <span className="text-urgent-text font-semibold uppercase tracking-wider text-[9px] bg-urgent-bg border border-urgent-border px-1 rounded">
                       {c.type.replace("-", " ")}
                     </span>
                     <button
                       onClick={() => handleFocusNode(c.nodeId)}
-                      className="text-muted-foreground hover:text-emerald-400 flex items-center gap-0.5"
+                      className="text-muted-foreground hover:text-goal-text flex items-center gap-0.5"
                       title="Focus Node"
                     >
                       <Focus className="w-3.5 h-3.5" />
@@ -571,8 +748,8 @@ function FlowEditor({ canvas }: CanvasClientProps) {
                   <p className="text-foreground leading-normal font-sans text-xs">
                     {c.message}
                   </p>
-                  <div className="border-t border-red-950/30 pt-1.5 mt-1 text-[10px] text-muted-foreground leading-relaxed italic">
-                    <strong className="text-red-400/80 font-bold block mb-0.5">Suggestion:</strong>
+                  <div className="border-t border-urgent-border pt-1.5 mt-1 text-[10px] text-muted-foreground leading-relaxed italic">
+                    <strong className="text-urgent-text font-bold block mb-0.5">Suggestion:</strong>
                     {c.rescheduleSuggestion}
                   </div>
                 </div>

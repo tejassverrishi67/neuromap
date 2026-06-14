@@ -128,7 +128,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
     const diffMs = target.getTime() - now.getTime();
     
     if (diffMs < 0) {
-      return { text: "Overdue", color: "text-red-700 dark:text-red-500 border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20", urgency: "critical" };
+      return { text: "Overdue", color: "text-urgent-text border-urgent-border bg-urgent-bg", urgency: "critical" };
     }
 
     const diffHours = diffMs / (1000 * 60 * 60);
@@ -137,7 +137,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
     if (diffHours <= threshold) {
       return {
         text: `${Math.round(diffHours)} hours left`,
-        color: "text-amber-700 dark:text-amber-500 border-amber-200 dark:border-amber-900/50 bg-amber-55 dark:bg-amber-950/20",
+        color: "text-deadline-text border-deadline-border bg-deadline-bg",
         urgency: "high"
       };
     }
@@ -145,7 +145,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
     const diffDays = Math.ceil(diffHours / 24);
     return {
       text: `${diffDays} days left`,
-      color: "text-emerald-700 dark:text-emerald-500 border-emerald-200 dark:border-emerald-900/30 bg-emerald-50 dark:bg-emerald-950/10",
+      color: "text-goal-text border-goal-border bg-goal-bg",
       urgency: "low"
     };
   };
@@ -156,11 +156,11 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
   const getPriorityBadge = (p: string) => {
     switch (p) {
       case "high":
-        return <Badge className="bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/30 text-[10px] py-0 px-1.5 font-mono select-none">High</Badge>;
+        return <Badge className="bg-urgent-bg text-urgent-text border border-urgent-border text-[10px] py-0 px-1.5 font-mono select-none">High</Badge>;
       case "medium":
-        return <Badge className="bg-sky-100 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-900/30 text-[10px] py-0 px-1.5 font-mono select-none">Medium</Badge>;
+        return <Badge className="bg-task-bg text-task-text border border-task-border text-[10px] py-0 px-1.5 font-mono select-none">Medium</Badge>;
       default:
-        return <Badge className="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 text-[10px] py-0 px-1.5 font-mono select-none">Low</Badge>;
+        return <Badge className="bg-goal-bg text-goal-text border border-goal-border text-[10px] py-0 px-1.5 font-mono select-none">Low</Badge>;
     }
   };
 
@@ -168,41 +168,41 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
   const typeConfigs = {
     goal: {
       border: selected 
-        ? "border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]" 
-        : "border-emerald-200 dark:border-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-600/45",
-      headerBg: "bg-emerald-55 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/20",
-      iconColor: "text-emerald-600 dark:text-emerald-400",
+        ? "border-goal-text shadow-[0_0_12px_rgba(16,185,129,0.3)]" 
+        : "border-goal-border hover:border-goal-text",
+      headerBg: "bg-goal-header border-goal-border",
+      iconColor: "text-goal-text",
       icon: Target,
       label: "Goal"
     },
     task: {
       border: selected 
-        ? "border-sky-500 shadow-[0_0_12px_rgba(56,189,248,0.3)]" 
-        : "border-sky-200 dark:border-sky-900/50 hover:border-sky-400 dark:hover:border-sky-600/45",
-      headerBg: "bg-sky-55 dark:bg-sky-950/30 border-sky-100 dark:border-sky-900/20",
-      iconColor: "text-sky-600 dark:text-sky-400",
+        ? "border-task-text shadow-[0_0_12px_rgba(56,189,248,0.3)]" 
+        : "border-task-border hover:border-task-text",
+      headerBg: "bg-task-header border-task-border",
+      iconColor: "text-task-text",
       icon: CheckSquare,
       label: "Task"
     },
     deadline: {
       border: selected 
-        ? "border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)]" 
+        ? "border-deadline-text shadow-[0_0_12px_rgba(245,158,11,0.3)]" 
         : deadline.urgency === "critical"
-          ? "border-red-300 dark:border-red-900 shadow-[0_0_8px_rgba(239,68,68,0.1)] hover:border-red-500 dark:hover:border-red-600"
+          ? "border-urgent-border shadow-[0_0_8px_rgba(239,68,68,0.1)] hover:border-urgent-text"
           : deadline.urgency === "high"
-            ? "border-amber-300 dark:border-amber-900 shadow-[0_0_8px_rgba(245,158,11,0.1)] hover:border-amber-500 dark:hover:border-amber-600"
-            : "border-amber-200 dark:border-amber-900/50 hover:border-amber-400 dark:hover:border-amber-600/45",
-      headerBg: "bg-amber-55 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900/20",
-      iconColor: "text-amber-600 dark:text-amber-400",
+            ? "border-deadline-border shadow-[0_0_8px_rgba(245,158,11,0.1)] hover:border-deadline-text"
+            : "border-deadline-border hover:border-deadline-text",
+      headerBg: "bg-deadline-header border-deadline-border",
+      iconColor: "text-deadline-text",
       icon: Clock,
       label: "Deadline"
     },
     note: {
       border: selected 
-        ? "border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.3)]" 
-        : "border-purple-200 dark:border-purple-900/50 hover:border-purple-400 dark:hover:border-purple-600/45",
-      headerBg: "bg-purple-55 dark:bg-purple-950/30 border-purple-100 dark:border-purple-900/20",
-      iconColor: "text-purple-600 dark:text-purple-400",
+        ? "border-note-text shadow-[0_0_12px_rgba(168,85,247,0.3)]" 
+        : "border-note-border hover:border-note-text",
+      headerBg: "bg-note-header border-note-border",
+      iconColor: "text-note-text",
       icon: FileText,
       label: "Note"
     }
@@ -214,8 +214,8 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
   return (
     <Card className={`w-72 bg-card/90 backdrop-blur-md border ${config.border} rounded-xl shadow-xl transition-all duration-200`}>
       {/* React Flow Connection Handles */}
-      <Handle type="target" position={Position.Top} className="!bg-emerald-500" />
-      <Handle type="source" position={Position.Bottom} className="!bg-emerald-500" />
+      <Handle type="target" position={Position.Top} className="!bg-primary" />
+      <Handle type="source" position={Position.Bottom} className="!bg-primary" />
 
       {/* Node Header */}
       <div className={`p-3 border-b flex items-center justify-between rounded-t-xl ${config.headerBg}`}>
@@ -225,7 +225,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
             {config.label}
           </span>
           {data.conflicts && data.conflicts.length > 0 && (
-            <Badge variant="outline" className="h-4 px-1 flex gap-0.5 border-red-200 dark:border-red-900/60 bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 font-mono text-[8px] animate-pulse select-none">
+            <Badge variant="outline" className="h-4 px-1 flex gap-0.5 border-urgent-border bg-urgent-bg text-urgent-text font-mono text-[8px] animate-pulse select-none">
               <AlertTriangle className="w-2.5 h-2.5" /> Alert
             </Badge>
           )}
@@ -255,7 +255,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
             <DialogContent className="bg-card border-border text-foreground font-mono text-xs max-w-sm">
               <form onSubmit={handleSaveEdit} className="space-y-4">
                 <DialogHeader>
-                  <DialogTitle className="text-emerald-400 text-base">Edit {config.label} Node</DialogTitle>
+                  <DialogTitle className="text-primary text-base">Edit {config.label} Node</DialogTitle>
                   <DialogDescription className="text-[10px] text-muted-foreground">
                     Customize properties for your interconnected card.
                   </DialogDescription>
@@ -284,7 +284,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                       required
-                      className="bg-background border-border text-foreground focus-visible:ring-emerald-500 font-sans text-xs"
+                      className="bg-background border-border text-foreground focus-visible:ring-primary font-sans text-xs"
                     />
                   </div>
 
@@ -295,7 +295,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                       rows={3}
-                      className="bg-background border-border text-foreground focus-visible:ring-emerald-500 font-sans text-xs"
+                      className="bg-background border-border text-foreground focus-visible:ring-primary font-sans text-xs"
                     />
                   </div>
 
@@ -311,7 +311,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                           max="100"
                           value={editProgress}
                           onChange={(e) => setEditProgress(Number(e.target.value))}
-                          className="bg-background border-border focus-visible:ring-emerald-500 font-sans text-xs"
+                          className="bg-background border-border focus-visible:ring-primary font-sans text-xs"
                         />
                       </div>
                       <div className="space-y-1">
@@ -321,7 +321,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                           type="date"
                           value={editDueDate ? editDueDate.split("T")[0] : ""}
                           onChange={(e) => setEditDueDate(e.target.value)}
-                          className="bg-background border-border focus-visible:ring-emerald-500 font-sans text-xs"
+                          className="bg-background border-border focus-visible:ring-primary font-sans text-xs"
                         />
                       </div>
                     </div>
@@ -369,7 +369,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                           type="datetime-local"
                           value={editDueDate ? editDueDate.substring(0, 16) : ""}
                           onChange={(e) => setEditDueDate(new Date(e.target.value).toISOString())}
-                          className="bg-background border-border focus-visible:ring-emerald-500 font-sans text-xs"
+                          className="bg-background border-border focus-visible:ring-primary font-sans text-xs"
                         />
                       </div>
                       <div className="space-y-1">
@@ -379,7 +379,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                           type="number"
                           value={editWarningThreshold}
                           onChange={(e) => setEditWarningThreshold(Number(e.target.value))}
-                          className="bg-background border-border focus-visible:ring-emerald-500 font-sans text-xs"
+                          className="bg-background border-border focus-visible:ring-primary font-sans text-xs"
                         />
                       </div>
                     </div>
@@ -394,7 +394,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                         value={editTagsString}
                         onChange={(e) => setEditTagsString(e.target.value)}
                         placeholder="e.g. math, exam, draft"
-                        className="bg-background border-border focus-visible:ring-emerald-500 font-sans text-xs"
+                        className="bg-background border-border focus-visible:ring-primary font-sans text-xs"
                       />
                     </div>
                   )}
@@ -404,7 +404,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                   <Button type="button" variant="ghost" size="sm" onClick={() => setIsEditOpen(false)} className="hover:bg-muted/40 font-mono text-[10px]">
                     Cancel
                   </Button>
-                  <Button type="submit" size="sm" className="bg-primary hover:bg-emerald-700 text-primary-foreground font-mono text-[10px]">
+                  <Button type="submit" size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-mono text-[10px]">
                     Save Changes
                   </Button>
                 </DialogFooter>
@@ -413,7 +413,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
           </Dialog>
 
           {/* Delete Button */}
-          <Button size="icon" variant="ghost" onClick={handleDelete} className="h-6 w-6 text-muted-foreground hover:text-red-400 hover:bg-red-950/20">
+          <Button size="icon" variant="ghost" onClick={handleDelete} className="h-6 w-6 text-muted-foreground hover:text-urgent-text hover:bg-urgent-bg">
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
@@ -434,10 +434,10 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
 
         {/* Dynamic conflict alerts rendering */}
         {data.conflicts && data.conflicts.length > 0 && (
-          <div className="border border-red-900/40 bg-red-950/15 p-2 rounded-lg space-y-1 nodrag">
+          <div className="border border-urgent-border bg-urgent-bg p-2 rounded-lg space-y-1 nodrag">
             {data.conflicts.map((c: any, i: number) => (
-              <div key={i} className="flex gap-1.5 items-start text-[9px] text-red-300 leading-snug">
-                <AlertTriangle className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
+              <div key={i} className="flex gap-1.5 items-start text-[9px] text-urgent-text leading-snug">
+                <AlertTriangle className="w-3 h-3 text-urgent-text shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold">{c.message}</span>
                   <span className="block text-[8.5px] text-muted-foreground/80 italic mt-0.5">
@@ -456,17 +456,17 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
           <div className="space-y-2 border-t border-border/40 pt-2.5">
             <div className="flex justify-between items-center text-[10px]">
               <span className="text-muted-foreground font-mono">Progress</span>
-              <span className="font-bold font-mono text-emerald-400">{data.progress ?? 0}%</span>
+              <span className="font-bold font-mono text-goal-text">{data.progress ?? 0}%</span>
             </div>
             <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                className="h-full bg-goal-text rounded-full transition-all duration-300"
                 style={{ width: `${data.progress ?? 0}%` }}
               />
             </div>
             {data.dueDate && (
               <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground font-mono">
-                <Calendar className="w-3.5 h-3.5 text-emerald-500" />
+                <Calendar className="w-3.5 h-3.5 text-goal-text" />
                 <span>Target: {new Date(data.dueDate).toLocaleDateString()}</span>
               </div>
             )}
@@ -486,7 +486,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
                   updateNodeData({ status: newStatus, completedAt });
                   toast.success(`Task marked as ${newStatus}`);
                 }}
-                className="w-4 h-4 accent-emerald-500 rounded border-border cursor-pointer nodrag"
+                className="w-4 h-4 accent-primary rounded border-border cursor-pointer nodrag"
               />
               <span className={`text-[10px] font-mono ${data.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>
                 {data.status === "done" ? "Done" : data.status === "in-progress" ? "In Progress" : "Todo"}
@@ -507,7 +507,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
             </div>
             {data.dueDate && (
               <div className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3 text-amber-500" />
+                <AlertTriangle className="w-3 h-3 text-deadline-text" />
                 <span>Due: {new Date(data.dueDate).toLocaleString()}</span>
               </div>
             )}
@@ -521,7 +521,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
               <Badge
                 key={tag}
                 variant="secondary"
-                className="bg-purple-950/20 text-purple-400 border border-purple-900/30 text-[9px] font-mono py-0 px-1"
+                className="bg-note-bg text-note-text border border-note-border text-[9px] font-mono py-0 px-1"
               >
                 <Tag className="w-2.5 h-2.5 mr-0.5 inline-block shrink-0" />
                 {tag}

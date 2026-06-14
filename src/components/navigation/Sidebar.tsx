@@ -81,11 +81,11 @@ export default function Sidebar() {
       >
         {/* Header */}
         <div className="h-16 flex items-center px-4 border-b border-border gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-primary animate-pulse">
-            <BrainCircuit className="w-5 h-5 text-emerald-400" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-goal-bg border border-goal-border text-goal-text animate-pulse">
+            <BrainCircuit className="w-5 h-5" />
           </div>
           {!isCollapsed && (
-            <span className="font-semibold text-lg tracking-wider text-emerald-400 font-mono">
+            <span className="font-semibold text-lg tracking-wider text-primary font-mono">
               NeuroMap
             </span>
           )}
@@ -102,11 +102,11 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                   Active
-                    ? "bg-primary/15 text-emerald-400 border border-primary/20"
+                    ? "bg-primary/10 text-primary border border-primary/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
                 )}
               >
-                <item.icon className={cn("w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-105", Active ? "text-emerald-400" : "text-muted-foreground")} />
+                <item.icon className={cn("w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-105", Active ? "text-primary" : "text-muted-foreground")} />
                 {!isCollapsed && <span>{item.name}</span>}
 
                 {/* Tooltip when collapsed */}
@@ -159,10 +159,10 @@ export default function Sidebar() {
               href={item.href}
               className={cn(
                 "flex flex-col items-center justify-center w-16 h-12 rounded-lg gap-0.5 text-[10px] font-medium transition-colors",
-                Active ? "text-emerald-400" : "text-muted-foreground"
+                Active ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <item.icon className={cn("w-5 h-5", Active ? "text-emerald-400" : "text-muted-foreground")} />
+              <item.icon className={cn("w-5 h-5", Active ? "text-primary" : "text-muted-foreground")} />
               <span>{item.name}</span>
             </Link>
           );

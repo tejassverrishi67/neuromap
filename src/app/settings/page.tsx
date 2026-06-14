@@ -29,7 +29,6 @@ export default function SettingsPage() {
     setMounted(true);
   }, []);
 
-  const isDbConnected = false;
   const connectionStateString = "Development Mode";
   const databaseName = "Local Storage (Sandbox)";
   const host = "Browser Cache";
@@ -71,7 +70,7 @@ export default function SettingsPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success("All canvases exported successfully!");
-    } catch (e) {
+    } catch {
       toast.error("Failed to export backup");
     }
   };
@@ -181,8 +180,8 @@ export default function SettingsPage() {
     <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12">
       {/* Page Header */}
       <div className="border-b border-border pb-6">
-        <h1 className="text-3xl font-bold tracking-tight font-mono text-emerald-400 flex items-center gap-3">
-          <Settings className="w-8 h-8 text-emerald-500" /> Settings & Config
+        <h1 className="text-3xl font-bold tracking-tight font-mono text-primary flex items-center gap-3">
+          <Settings className="w-8 h-8 text-primary" /> Settings & Config
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
           Review system database configuration state, key binds, and visual mapping parameters.
@@ -193,8 +192,8 @@ export default function SettingsPage() {
         {/* Database Monitor Card */}
         <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
-              <Database className="w-5 h-5 text-emerald-500" /> Storage Sandbox Status
+            <CardTitle className="font-mono text-base text-primary flex items-center gap-2">
+              <Database className="w-5 h-5 text-primary" /> Storage Sandbox Status
             </CardTitle>
             <CardDescription className="text-xs">
               Diagnostics for active second brain storage providers.
@@ -203,7 +202,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4 font-mono text-xs">
             <div className="flex justify-between items-center py-2 border-b border-border/40">
               <span className="text-muted-foreground">Storage Adapter</span>
-              <Badge className="bg-amber-950/45 text-amber-400 border border-amber-900/40">
+              <Badge className="bg-deadline-bg text-deadline-text border border-deadline-border">
                 {connectionStateString}
               </Badge>
             </div>
@@ -217,8 +216,8 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-between items-center py-2">
               <span className="text-muted-foreground">Local Redundancy Engine</span>
-              <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" /> Active LocalStorage
+              <span className="text-primary font-semibold flex items-center gap-1">
+                <ShieldCheck className="w-4 h-4 text-primary" /> Active LocalStorage
               </span>
             </div>
           </CardContent>
@@ -230,8 +229,8 @@ export default function SettingsPage() {
         {/* Shortcuts & Bindings Card */}
         <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl">
           <CardHeader>
-            <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
-              <Keyboard className="w-5 h-5 text-emerald-500" /> Canvas Key Binds
+            <CardTitle className="font-mono text-base text-primary flex items-center gap-2">
+              <Keyboard className="w-5 h-5 text-primary" /> Canvas Key Binds
             </CardTitle>
             <CardDescription className="text-xs">
               List of interactive gestures supported in the visual canvas pane.
@@ -245,7 +244,7 @@ export default function SettingsPage() {
                   {s.keys.map((k, kIndex) => (
                     <kbd
                       key={kIndex}
-                      className="px-1.5 py-0.5 rounded bg-background border border-border/80 text-[10px] font-sans text-foreground whitespace-nowrap shadow-inner font-mono text-emerald-400/90"
+                      className="px-1.5 py-0.5 rounded bg-background border border-border/80 text-[10px] font-sans text-foreground whitespace-nowrap shadow-inner font-mono text-primary/90"
                     >
                       {k}
                     </kbd>
@@ -259,8 +258,8 @@ export default function SettingsPage() {
         {/* Theme Preference Settings Card */}
         <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl md:col-span-2">
           <CardHeader>
-            <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
-              <Palette className="w-5 h-5 text-emerald-500" /> Theme Configuration
+            <CardTitle className="font-mono text-base text-primary flex items-center gap-2">
+              <Palette className="w-5 h-5 text-primary" /> Theme Configuration
             </CardTitle>
             <CardDescription className="text-xs">
               Select your visual styling interface preference.
@@ -283,13 +282,13 @@ export default function SettingsPage() {
                   }}
                   className={`p-4 rounded-xl border text-left flex flex-col justify-between h-28 hover:scale-[1.01] transition-all font-mono group ${
                     active
-                      ? "border-emerald-500 bg-emerald-950/20 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                      ? "border-primary bg-accent text-accent-foreground shadow-lg shadow-primary/15"
                       : "border-border bg-background/30 hover:border-border/80 hover:bg-background/60 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <IconComp className={`w-5 h-5 ${active ? "text-emerald-400" : "text-muted-foreground group-hover:text-foreground"}`} />
-                    {active && <Badge className="bg-emerald-950 text-emerald-400 border border-emerald-900 font-mono text-[9px] px-1 py-0 select-none">Active</Badge>}
+                    <IconComp className={`w-5 h-5 ${active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
+                    {active && <Badge className="bg-goal-bg text-goal-text border border-goal-border font-mono text-[9px] px-1 py-0 select-none">Active</Badge>}
                   </div>
                   <div>
                     <span className="block text-xs font-bold font-sans mt-2">{tOption.label}</span>
@@ -307,8 +306,8 @@ export default function SettingsPage() {
         {/* Data Portability (Import/Export Backup) Card */}
         <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl md:col-span-2">
           <CardHeader>
-            <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-500" /> Data Portability & Backup
+            <CardTitle className="font-mono text-base text-primary flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" /> Data Portability & Backup
             </CardTitle>
             <CardDescription className="text-xs">
               Export all canvases to a backup file, or restore/import canvases from a previous JSON export.
@@ -318,10 +317,10 @@ export default function SettingsPage() {
             <Button
               onClick={handleExportAll}
               variant="outline"
-              className="w-full sm:w-auto font-mono text-xs border border-border/40 hover:border-emerald-500/30 gap-2 h-9 px-4"
+              className="w-full sm:w-auto font-mono text-xs border border-border/40 hover:border-primary/30 gap-2 h-9 px-4"
               title="Download all canvases as a JSON backup"
             >
-              <Download className="w-4 h-4 text-emerald-400" /> Export System Backup
+              <Download className="w-4 h-4 text-primary" /> Export System Backup
             </Button>
             
             <div className="w-full sm:w-auto relative">
@@ -336,18 +335,18 @@ export default function SettingsPage() {
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 variant="outline"
-                className="w-full sm:w-auto font-mono text-xs border border-border/40 hover:border-emerald-500/30 gap-2 h-9 px-4"
+                className="w-full sm:w-auto font-mono text-xs border border-border/40 hover:border-primary/30 gap-2 h-9 px-4"
                 disabled={isImporting}
                 title="Upload and restore canvases from a JSON backup file"
               >
                 {isImporting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
                     Importing...
                   </>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4 text-emerald-400" />
+                    <Upload className="w-4 h-4 text-primary" />
                     Import Canvas Backup
                   </>
                 )}
@@ -355,15 +354,15 @@ export default function SettingsPage() {
             </div>
           </CardContent>
           <CardFooter className="text-[10px] text-muted-foreground border-t border-border/40 pt-4">
-            Imports are validated for structural integrity to prevent corruption. Duplicate canvas names are automatically appended with "(Imported)".
+            Imports are validated for structural integrity to prevent corruption. Duplicate canvas names are automatically appended with &quot;(Imported)&quot;.
           </CardFooter>
         </Card>
 
         {/* System Details / Specifications */}
         <Card className="md:col-span-2 bg-card/40 border-border backdrop-blur-sm shadow-xl">
           <CardHeader>
-            <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
-              <HardDrive className="w-5 h-5 text-emerald-500" /> System Specifications
+            <CardTitle className="font-mono text-base text-primary flex items-center gap-2">
+              <HardDrive className="w-5 h-5 text-primary" /> System Specifications
             </CardTitle>
             <CardDescription className="text-xs">
               System software parameters.
@@ -371,15 +370,15 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs text-muted-foreground">
             <div className="p-3 bg-background/50 border border-border/40 rounded-xl">
-              <span className="block text-[10px] uppercase text-emerald-500 font-bold mb-1">Stack version</span>
+              <span className="block text-[10px] uppercase text-primary font-bold mb-1">Stack version</span>
               Next.js 16 (React 19 App Router)
             </div>
             <div className="p-3 bg-background/50 border border-border/40 rounded-xl">
-              <span className="block text-[10px] uppercase text-emerald-500 font-bold mb-1">Canvas Engine</span>
+              <span className="block text-[10px] uppercase text-primary font-bold mb-1">Canvas Engine</span>
               @xyflow/react v12.4+
             </div>
             <div className="p-3 bg-background/50 border border-border/40 rounded-xl">
-              <span className="block text-[10px] uppercase text-emerald-500 font-bold mb-1">Theme aesthetic</span>
+              <span className="block text-[10px] uppercase text-primary font-bold mb-1">Theme aesthetic</span>
               Silent Coder (Forest/Charcoal CSS)
             </div>
           </CardContent>

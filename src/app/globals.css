@@ -46,6 +46,32 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Unified Semantic Priority Tokens */
+  --color-goal-text: var(--goal-text);
+  --color-goal-bg: var(--goal-bg);
+  --color-goal-border: var(--goal-border);
+  --color-goal-header: var(--goal-header);
+
+  --color-task-text: var(--task-text);
+  --color-task-bg: var(--task-bg);
+  --color-task-border: var(--task-border);
+  --color-task-header: var(--task-header);
+
+  --color-deadline-text: var(--deadline-text);
+  --color-deadline-bg: var(--deadline-bg);
+  --color-deadline-border: var(--deadline-border);
+  --color-deadline-header: var(--deadline-header);
+
+  --color-note-text: var(--note-text);
+  --color-note-bg: var(--note-bg);
+  --color-note-border: var(--note-border);
+  --color-note-header: var(--note-header);
+
+  --color-urgent-text: var(--urgent-text);
+  --color-urgent-bg: var(--urgent-bg);
+  --color-urgent-border: var(--urgent-border);
+  --color-urgent-header: var(--urgent-header);
 }
 
 /* We set Light Theme as default inside :root and Dark Theme under .dark */
@@ -86,6 +112,32 @@
   --sidebar-accent-foreground: oklch(0.20 0.01 240);
   --sidebar-border: oklch(0.90 0.01 240);
   --sidebar-ring: oklch(0.52 0.16 142);
+
+  /* Semantic priority values - Light Mode values */
+  --goal-text: oklch(0.38 0.14 142);      /* Emerald-700 equivalent */
+  --goal-bg: oklch(0.97 0.01 142);        /* Emerald-50/100 equivalent */
+  --goal-border: oklch(0.90 0.03 142);    /* Emerald-200 equivalent */
+  --goal-header: oklch(0.95 0.02 142);    /* Emerald-50 equivalent */
+
+  --task-text: oklch(0.40 0.12 210);      /* Sky-700 equivalent */
+  --task-bg: oklch(0.96 0.01 210);        /* Sky-50/100 equivalent */
+  --task-border: oklch(0.88 0.03 210);    /* Sky-200 equivalent */
+  --task-header: oklch(0.94 0.02 210);    /* Sky-50 equivalent */
+
+  --deadline-text: oklch(0.44 0.14 75);   /* Amber-700 equivalent */
+  --deadline-bg: oklch(0.97 0.01 75);     /* Amber-50/100 equivalent */
+  --deadline-border: oklch(0.90 0.04 75); /* Amber-200 equivalent */
+  --deadline-header: oklch(0.95 0.02 75); /* Amber-50 equivalent */
+
+  --note-text: oklch(0.40 0.15 290);      /* Purple-700 equivalent */
+  --note-bg: oklch(0.97 0.01 290);        /* Purple-50/100 equivalent */
+  --note-border: oklch(0.90 0.03 290);    /* Purple-200 equivalent */
+  --note-header: oklch(0.95 0.02 290);    /* Purple-50 equivalent */
+
+  --urgent-text: oklch(0.42 0.16 25);     /* Red-700 equivalent */
+  --urgent-bg: oklch(0.96 0.01 25);       /* Red-50/100 equivalent */
+  --urgent-border: oklch(0.88 0.04 25);   /* Red-200 equivalent */
+  --urgent-header: oklch(0.94 0.02 25);   /* Red-50 equivalent */
 }
 
 .dark {
@@ -123,6 +175,32 @@
   --sidebar-accent-foreground: oklch(0.92 0.015 250);
   --sidebar-border: oklch(0.22 0.02 250);
   --sidebar-ring: oklch(0.52 0.16 142);
+
+  /* Semantic priority values - Dark Mode values */
+  --goal-text: oklch(0.78 0.12 142);      /* Emerald-400 equivalent */
+  --goal-bg: oklch(0.18 0.04 142 / 0.2);  /* Emerald-950/20 equivalent */
+  --goal-border: oklch(0.35 0.08 142 / 0.4); /* Emerald-900/40 equivalent */
+  --goal-header: oklch(0.20 0.05 142 / 0.4); /* Emerald-950/40 equivalent */
+
+  --task-text: oklch(0.78 0.10 210);      /* Sky-400 equivalent */
+  --task-bg: oklch(0.18 0.04 210 / 0.2);  /* Sky-950/20 equivalent */
+  --task-border: oklch(0.35 0.08 210 / 0.4); /* Sky-900/40 equivalent */
+  --task-header: oklch(0.20 0.05 210 / 0.4); /* Sky-950/40 equivalent */
+
+  --deadline-text: oklch(0.78 0.12 75);   /* Amber-400 equivalent */
+  --deadline-bg: oklch(0.18 0.04 75 / 0.2);  /* Amber-950/20 equivalent */
+  --deadline-border: oklch(0.35 0.08 75 / 0.4); /* Amber-900/40 equivalent */
+  --deadline-header: oklch(0.20 0.05 75 / 0.4); /* Amber-950/40 equivalent */
+
+  --note-text: oklch(0.78 0.12 290);      /* Purple-400 equivalent */
+  --note-bg: oklch(0.18 0.04 290 / 0.2);  /* Purple-950/20 equivalent */
+  --note-border: oklch(0.35 0.08 290 / 0.4); /* Purple-900/40 equivalent */
+  --note-header: oklch(0.20 0.05 290 / 0.4); /* Purple-950/40 equivalent */
+
+  --urgent-text: oklch(0.78 0.14 25);     /* Red-400 equivalent */
+  --urgent-bg: oklch(0.18 0.04 25 / 0.2);  /* Red-950/20 equivalent */
+  --urgent-border: oklch(0.35 0.08 25 / 0.4); /* Red-900/40 equivalent */
+  --urgent-header: oklch(0.20 0.05 25 / 0.4); /* Red-950/40 equivalent */
 }
 
 @layer base {

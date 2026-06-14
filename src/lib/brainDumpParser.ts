@@ -9,6 +9,7 @@ export interface ParsedNode {
   warningThreshold?: number;
   tags?: string[];
   confidence: number; // 0.0 to 1.0
+  sentenceIndex?: number; // Tracks parent sentence/clause index
 }
 
 /**
@@ -187,22 +188,10 @@ export function parseBrainDump(text: string): ParsedNode[] {
     const cleaned = cleanClause(rawClause);
     if (cleaned.length < 3) return; // Skip trivial fragments
     
-    let nodeType: "goal" | "task" | "deadline" | "note" = "task";
-    let title = cleaned;
-    let content = "";
-    let confidence = 0.5;
-    let priority: "low" | "medium" | "high" = "medium";
-    let status: "todo" | "in-progress" | "done" = "todo";
-    let dueDate: string | undefined = undefined;
-    let tags: string[] = [];
-    
     const lowerText = rawClause.toLowerCase();
     
     // 1. Detect relative dates for deadline extraction
     const detectedDate = parseRelativeDate(lowerText);
-    if (detectedDate) {
-      dueDate = detectedDate.toISOString();
-    }
     
     // 2. Identify type based on verbs, structure, and keywords
     const isGoalWord = /\b(goal|placement|placements|career|portfolio|roadmap|timeline|target|achieve|become|promotion|quarter|q[1-4]|semester)\b/i.test(lowerText);
@@ -211,81 +200,178 @@ export function parseBrainDump(text: string): ParsedNode[] {
     const isNoteWord = /\b(note|remember|info|links|references|ideas|thoughts|meeting notes|contact)\b/i.test(lowerText);
     
     // Heuristic Classification
-    if (isDeadlineWord && detectedDate) {
-      nodeType = "deadline";
-      confidence = 0.90;
-      
-      // Clean up title by removing date expressions for cleaner card display
-      // e.g. "prepare for DBMS exam next week" -> Title "Prepare for DBMS exam"
-      title = cleaned
+    if (detectedDate && isTaskWord) {
+      // 1. Create Task Node
+      let taskTitle = cleaned
         .replace(/\b(?:by|on|before|due)\s+(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tue|wed|thu|fri|sat)\b/i, "")
         .replace(/\b(?:by|on|before|due)\s+next\s+week\b/i, "")
+        .replace(/\b(?:by|on|before|due)\s+next\s+month\b/i, "")
         .replace(/\b(?:by|on|before|due)\s+tomorrow\b/i, "")
         .replace(/\bnext\s+week\b/i, "")
+        .replace(/\bnext\s+month\b/i, "")
         .replace(/\btomorrow\b/i, "")
         .replace(/\s+/g, " ")
         .trim();
-        
-      content = `Extracted from: "${rawClause}"`;
-    } else if (isGoalWord && !isDeadlineWord && (lowerText.includes("before") || lowerText.includes("timeline") || lowerText.includes("target") || lowerText.includes("finish"))) {
-      nodeType = "goal";
-      confidence = 0.85;
-      content = `Goal target extracted from thoughts.`;
-    } else if (isTaskWord) {
-      nodeType = "task";
-      confidence = 0.88;
       
-      // Set status / priority cues
+      // Capitalize first letter of taskTitle
+      if (taskTitle.length > 0) {
+        taskTitle = taskTitle.charAt(0).toUpperCase() + taskTitle.slice(1);
+      }
+      
+      if (taskTitle.length > 60) {
+        const cutoff = taskTitle.indexOf(" ", 50);
+        if (cutoff !== -1) {
+          taskTitle = taskTitle.substring(0, cutoff).trim();
+        }
+      }
+
+      // Priority cues
+      let taskPriority: "low" | "medium" | "high" = "medium";
       if (lowerText.includes("urgent") || lowerText.includes("asap") || lowerText.includes("important") || lowerText.includes("exam") || lowerText.includes("placement")) {
-        priority = "high";
+        taskPriority = "high";
       } else if (lowerText.includes("later") || lowerText.includes("someday") || lowerText.includes("low priority")) {
-        priority = "low";
+        taskPriority = "low";
       }
-      
+
+      // Status cues
+      let taskStatus: "todo" | "in-progress" | "done" = "todo";
       if (lowerText.includes("completed") || lowerText.includes("done") || lowerText.includes("finished")) {
-        status = "done";
+        taskStatus = "done";
       } else if (lowerText.includes("working on") || lowerText.includes("doing") || lowerText.includes("progress")) {
-        status = "in-progress";
+        taskStatus = "in-progress";
       }
-      
-      content = "";
-    } else if (isNoteWord || (!isGoalWord && !isTaskWord && !isDeadlineWord)) {
-      nodeType = "note";
-      confidence = 0.75;
-      
-      // Extract possible tags
-      const tagMatches = lowerText.match(/\b(dsa|leetcode|hackathon|exam|dbms|portfolio|placement|academics|career|study|personal)\b/g);
-      if (tagMatches) {
-        tags = Array.from(new Set(tagMatches));
+
+      parsedNodes.push({
+        id: `parsed-task-${index}-${Date.now()}`,
+        nodeType: "task",
+        title: taskTitle || "Untitled Task",
+        content: `Task extracted from: "${rawClause}"`,
+        status: taskStatus,
+        priority: taskPriority,
+        warningThreshold: 24,
+        sentenceIndex: index,
+        confidence: 0.88
+      });
+
+      // 2. Create Deadline Node
+      let deadlineTitle = "Sunday Deadline"; // default fallback
+      if (lowerText.includes("tomorrow")) {
+        deadlineTitle = "Tomorrow Deadline";
+      } else if (lowerText.includes("next week")) {
+        deadlineTitle = "Next Week Deadline";
+      } else if (lowerText.includes("next month")) {
+        deadlineTitle = "Next Month Deadline";
+      } else {
+        const dayMatch = lowerText.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tue|wed|thu|fri|sat)\b/i);
+        if (dayMatch) {
+          const matchedDay = dayMatch[1].toLowerCase();
+          const fullDayNames: Record<string, string> = {
+            sun: "Sunday", sunday: "Sunday",
+            mon: "Monday", monday: "Monday",
+            tue: "Tuesday", tuesday: "Tuesday",
+            wed: "Wednesday", wednesday: "Wednesday",
+            thu: "Thursday", thursday: "Thursday",
+            fri: "Friday", friday: "Friday",
+            sat: "Saturday", saturday: "Saturday"
+          };
+          deadlineTitle = `${fullDayNames[matchedDay] || "Sunday"} Deadline`;
+        } else {
+          deadlineTitle = "Submissions Deadline";
+        }
       }
+
+      parsedNodes.push({
+        id: `parsed-deadline-${index}-${Date.now()}-dl`,
+        nodeType: "deadline",
+        title: deadlineTitle,
+        content: `Deadline for: "${taskTitle}"`,
+        dueDate: detectedDate.toISOString(),
+        warningThreshold: 24,
+        sentenceIndex: index,
+        confidence: 0.90
+      });
+
     } else {
-      // Default to task if unsure but has high confidence in text quality
-      nodeType = "task";
-      confidence = 0.65;
-    }
-    
-    // Post-processing tweaks
-    if (title.length > 60) {
-      // Split long title into title + content
-      const cutoff = title.indexOf(" ", 50);
-      if (cutoff !== -1) {
-        content = title.substring(cutoff).trim();
-        title = title.substring(0, cutoff).trim();
+      // Single Node Extraction
+      let nodeType: "goal" | "task" | "deadline" | "note" = "task";
+      let title = cleaned;
+      let content = "";
+      let confidence = 0.5;
+      let priority: "low" | "medium" | "high" = "medium";
+      let status: "todo" | "in-progress" | "done" = "todo";
+      let dueDate: string | undefined = undefined;
+      let tags: string[] = [];
+
+      if (detectedDate) {
+        dueDate = detectedDate.toISOString();
       }
+
+      if (isDeadlineWord && detectedDate) {
+        nodeType = "deadline";
+        confidence = 0.90;
+        title = cleaned
+          .replace(/\b(?:by|on|before|due)\s+(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tue|wed|thu|fri|sat)\b/i, "")
+          .replace(/\b(?:by|on|before|due)\s+next\s+week\b/i, "")
+          .replace(/\b(?:by|on|before|due)\s+next\s+month\b/i, "")
+          .replace(/\b(?:by|on|before|due)\s+tomorrow\b/i, "")
+          .replace(/\bnext\s+week\b/i, "")
+          .replace(/\bnext\s+month\b/i, "")
+          .replace(/\btomorrow\b/i, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        content = `Extracted from: "${rawClause}"`;
+      } else if (isGoalWord && !isDeadlineWord && (lowerText.includes("before") || lowerText.includes("timeline") || lowerText.includes("target") || lowerText.includes("finish"))) {
+        nodeType = "goal";
+        confidence = 0.85;
+        content = `Goal target extracted from thoughts.`;
+      } else if (isTaskWord) {
+        nodeType = "task";
+        confidence = 0.88;
+        if (lowerText.includes("urgent") || lowerText.includes("asap") || lowerText.includes("important") || lowerText.includes("exam") || lowerText.includes("placement")) {
+          priority = "high";
+        } else if (lowerText.includes("later") || lowerText.includes("someday") || lowerText.includes("low priority")) {
+          priority = "low";
+        }
+        if (lowerText.includes("completed") || lowerText.includes("done") || lowerText.includes("finished")) {
+          status = "done";
+        } else if (lowerText.includes("working on") || lowerText.includes("doing") || lowerText.includes("progress")) {
+          status = "in-progress";
+        }
+        content = "";
+      } else if (isNoteWord || (!isGoalWord && !isTaskWord && !isDeadlineWord)) {
+        nodeType = "note";
+        confidence = 0.75;
+        const tagMatches = lowerText.match(/\b(dsa|leetcode|hackathon|exam|dbms|portfolio|placement|academics|career|study|personal)\b/g);
+        if (tagMatches) {
+          tags = Array.from(new Set(tagMatches));
+        }
+      } else {
+        nodeType = "task";
+        confidence = 0.65;
+      }
+
+      if (title.length > 60) {
+        const cutoff = title.indexOf(" ", 50);
+        if (cutoff !== -1) {
+          content = title.substring(cutoff).trim();
+          title = title.substring(0, cutoff).trim();
+        }
+      }
+
+      parsedNodes.push({
+        id: `parsed-${nodeType}-${index}-${Date.now()}`,
+        nodeType,
+        title: title || "Untitled Item",
+        content: content,
+        dueDate,
+        status,
+        priority,
+        warningThreshold: 24,
+        tags: tags.length > 0 ? tags : undefined,
+        sentenceIndex: index,
+        confidence: Math.round(confidence * 100) / 100
+      });
     }
-    
-    parsedNodes.push({
-      id: `parsed-${nodeType}-${index}-${Date.now()}`,
-      nodeType,
-      title: title || "Untitled Item",
-      content: content,
-      dueDate,
-      status,
-      priority,
-      warningThreshold: 24,
-      tags: tags.length > 0 ? tags : undefined,
-      confidence: Math.round(confidence * 100) / 100
-    });
   });
   
   return parsedNodes;

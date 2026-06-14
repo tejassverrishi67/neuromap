@@ -257,10 +257,10 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-bold tracking-tight font-mono text-emerald-400">
+            <h1 className="text-3xl font-bold tracking-tight font-mono text-primary">
               Visual Second Brain
             </h1>
-            <Badge className="bg-amber-950/45 text-amber-400 border border-amber-900/40 font-mono text-[10px] py-0.5 px-2.5 shrink-0 select-none">
+            <Badge className="bg-deadline-bg text-deadline-text border border-deadline-border font-mono text-[10px] py-0.5 px-2.5 shrink-0 select-none">
               Development Mode - Local Storage
             </Badge>
           </div>
@@ -270,7 +270,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
         </div>
         <Button
           onClick={() => openCreateDialog(null)}
-          className="bg-primary hover:bg-emerald-700 text-primary-foreground font-mono font-medium self-start md:self-auto gap-2"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-mono font-medium self-start md:self-auto gap-2"
         >
           <Plus className="w-4 h-4" /> Create Canvas
         </Button>
@@ -281,8 +281,8 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
         {/* Stat Card 1: Aggregated Counts */}
         <Card className="md:col-span-2 bg-card/40 border-border backdrop-blur-sm shadow-xl flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="font-mono text-lg text-emerald-400 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-emerald-500" /> Brain Metrics
+            <CardTitle className="font-mono text-lg text-primary flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-primary" /> Brain Metrics
             </CardTitle>
             <CardDescription className="text-xs">
               Aggregate nodes and metrics across all of your dynamic visual canvases.
@@ -299,7 +299,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                 key={idx}
                 className="bg-background/50 border border-border/80 rounded-xl p-4 flex flex-col items-center justify-center text-center"
               >
-                <span className={`text-2xl font-bold font-mono text-emerald-400 ${isLoading ? "animate-pulse" : ""}`}>
+                <span className={`text-2xl font-bold font-mono text-primary ${isLoading ? "animate-pulse" : ""}`}>
                   {st.val}
                 </span>
                 <span className="text-xs text-muted-foreground mt-1">{st.label}</span>
@@ -314,8 +314,8 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
         {/* Stat Card 2: Quick Info */}
         <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="font-mono text-lg text-emerald-400 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-emerald-500" /> Active Nodes
+            <CardTitle className="font-mono text-lg text-primary flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" /> Active Nodes
             </CardTitle>
             <CardDescription className="text-xs">
               Categorized composition of your second brain elements.
@@ -326,13 +326,13 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-mono">
                 <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <Target className="w-3.5 h-3.5 text-emerald-500" /> Goals
+                  <Target className="w-3.5 h-3.5 text-goal-text" /> Goals
                 </span>
                 <span>{isLoading ? "-" : stats.goals}</span>
               </div>
               <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  className="h-full bg-goal-text rounded-full transition-all duration-500"
                   style={{ width: `${!isLoading && stats.nodes ? (stats.goals / stats.nodes) * 100 : 0}%` }}
                 />
               </div>
@@ -341,13 +341,13 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-mono">
                 <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <CheckSquare className="w-3.5 h-3.5 text-sky-500" /> Tasks
+                  <CheckSquare className="w-3.5 h-3.5 text-task-text" /> Tasks
                 </span>
                 <span>{isLoading ? "-" : stats.tasks}</span>
               </div>
               <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-sky-500 rounded-full transition-all duration-500"
+                  className="h-full bg-task-text rounded-full transition-all duration-500"
                   style={{ width: `${!isLoading && stats.nodes ? (stats.tasks / stats.nodes) * 100 : 0}%` }}
                 />
               </div>
@@ -356,13 +356,13 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-mono">
                 <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <Clock className="w-3.5 h-3.5 text-amber-500" /> Deadlines
+                  <Clock className="w-3.5 h-3.5 text-deadline-text" /> Deadlines
                 </span>
                 <span>{isLoading ? "-" : stats.deadlines}</span>
               </div>
               <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                  className="h-full bg-deadline-text rounded-full transition-all duration-500"
                   style={{ width: `${!isLoading && stats.nodes ? (stats.deadlines / stats.nodes) * 100 : 0}%` }}
                 />
               </div>
@@ -376,8 +376,8 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
         {/* Card 3: Templates Quick Actions */}
         <Card className="md:col-span-1 bg-card/40 border-border backdrop-blur-sm shadow-xl flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="font-mono text-lg text-emerald-400 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-emerald-500" /> Quick Templates
+            <CardTitle className="font-mono text-lg text-primary flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-primary" /> Quick Templates
             </CardTitle>
             <CardDescription className="text-xs">
               Instantiate standard canvas schemas instantly.
@@ -385,17 +385,17 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { name: "Career Roadmap", desc: "SDE placement & resume milestones", icon: Trophy, color: "text-emerald-500 bg-emerald-950/45", id: "seeded-career-roadmap" },
-              { name: "Placement Preparation", desc: "Algorithmic study nodes & LC status", icon: Target, color: "text-sky-500 bg-sky-950/45", id: "seeded-placement-preparation" },
-              { name: "Semester Planning", desc: "Academics assignments & office hours", icon: Calendar, color: "text-amber-500 bg-amber-950/45", id: "seeded-semester-planning" },
-              { name: "Hackathon Planning", desc: "Build MVP checklist & pitches", icon: Sparkles, color: "text-purple-500 bg-purple-950/45", id: "seeded-hackathon-planning" }
+              { name: "Career Roadmap", desc: "SDE placement & resume milestones", icon: Trophy, color: "text-goal-text bg-goal-bg border-goal-border", id: "seeded-career-roadmap" },
+              { name: "Placement Preparation", desc: "Algorithmic study nodes & LC status", icon: Target, color: "text-task-text bg-task-bg border-task-border", id: "seeded-placement-preparation" },
+              { name: "Semester Planning", desc: "Academics assignments & office hours", icon: Calendar, color: "text-deadline-text bg-deadline-bg border-deadline-border", id: "seeded-semester-planning" },
+              { name: "Hackathon Planning", desc: "Build MVP checklist & pitches", icon: Sparkles, color: "text-note-text bg-note-bg border-note-border", id: "seeded-hackathon-planning" }
             ].map((t) => (
               <button
                 key={t.name}
                 onClick={() => router.push(`/canvas/${t.id}`)}
-                className="w-full text-left p-3 rounded-xl border border-border/60 hover:border-emerald-500/30 bg-background/30 hover:bg-background/80 transition-all duration-200 flex items-center gap-3 group animate-fade-in"
+                className="w-full text-left p-3 rounded-xl border border-border/60 hover:border-primary/30 bg-background/30 hover:bg-background/80 transition-all duration-200 flex items-center gap-3 group animate-fade-in"
               >
-                <div className={`p-2 rounded-lg ${t.color} shrink-0 group-hover:scale-105 transition-transform`}>
+                <div className={`p-2 rounded-lg border ${t.color} shrink-0 group-hover:scale-105 transition-transform`}>
                   <t.icon className="w-4 h-4" />
                 </div>
                 <div className="overflow-hidden">
@@ -413,8 +413,8 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
         {/* Card 4: Recent Canvases */}
         <Card className="md:col-span-2 bg-card/40 border-border backdrop-blur-sm shadow-xl flex flex-col">
           <CardHeader>
-            <CardTitle className="font-mono text-lg text-emerald-400 flex items-center gap-2">
-              <Workflow className="w-5 h-5 text-emerald-500" /> Recent Canvases
+            <CardTitle className="font-mono text-lg text-primary flex items-center gap-2">
+              <Workflow className="w-5 h-5 text-primary" /> Recent Canvases
             </CardTitle>
             <CardDescription className="text-xs">
               Load, review, or delete your saved second brain visual nodes.
@@ -444,7 +444,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                     Open a roadmap or create a canvas to get started.
                   </p>
                 </div>
-                <Button onClick={() => openCreateDialog(null)} variant="outline" size="sm" className="border-border hover:border-emerald-950 font-mono text-xs">
+                <Button onClick={() => openCreateDialog(null)} variant="outline" size="sm" className="border-border hover:border-primary hover:text-primary font-mono text-xs">
                   Create First Canvas
                 </Button>
               </div>
@@ -453,13 +453,13 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                 {recentCanvases.map((canvas) => (
                   <div
                     key={canvas._id}
-                    className="p-4 rounded-xl border border-border/80 hover:border-emerald-500/20 bg-background/25 hover:bg-background/60 transition-all duration-200 flex items-center justify-between gap-4"
+                    className="p-4 rounded-xl border border-border/80 hover:border-primary/20 bg-background/25 hover:bg-background/60 transition-all duration-200 flex items-center justify-between gap-4"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm font-semibold text-foreground truncate">{canvas.name}</h3>
                         {canvas.metadata?.totalNodes > 0 && (
-                          <Badge variant="secondary" className="bg-emerald-950/30 text-emerald-400 border border-emerald-900/30 font-mono text-[9px] px-1.5 py-0">
+                          <Badge variant="secondary" className="bg-goal-bg text-goal-text border border-goal-border font-mono text-[9px] px-1.5 py-0">
                             {canvas.metadata.totalNodes} Nodes
                           </Badge>
                         )}
@@ -477,7 +477,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                         size="icon"
                         variant="ghost"
                         onClick={() => router.push(`/canvas/${canvas._id}`)}
-                        className="h-8 w-8 text-muted-foreground hover:text-emerald-400 hover:bg-emerald-950/20 border border-transparent hover:border-emerald-900/30 transition-all"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all"
                         title="Open Canvas"
                       >
                         <ExternalLink className="w-4 h-4" />
@@ -486,7 +486,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                         size="icon"
                         variant="ghost"
                         onClick={() => setCanvasToDelete(canvas)}
-                        className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-red-950/25 border border-transparent hover:border-red-950/45 transition-all"
+                        className="h-8 w-8 text-muted-foreground hover:text-urgent-text hover:bg-urgent-bg border border-transparent hover:border-urgent-border transition-all"
                         title="Delete Canvas"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -503,8 +503,8 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
       {/* PRODUCTIVITY INSIGHTS PANEL SECTION */}
       <div className="border-t border-border pt-6 mt-6 space-y-6">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-emerald-400" />
-          <h2 className="text-xl font-bold tracking-tight font-mono text-emerald-400">
+          <Sparkles className="w-6 h-6 text-primary" />
+          <h2 className="text-xl font-bold tracking-tight font-mono text-primary">
             Productivity Analytics & Insights
           </h2>
         </div>
@@ -513,7 +513,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
           {/* Productivity Score Circular Gauge */}
           <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl flex flex-col justify-between">
             <CardHeader className="pb-1">
-              <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
+              <CardTitle className="font-mono text-base text-primary flex items-center gap-2">
                 Productivity Score
               </CardTitle>
               <CardDescription className="text-xs">
@@ -535,7 +535,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                     cx="50"
                     cy="50"
                     r="40"
-                    className="stroke-emerald-500 fill-none transition-all duration-1000 ease-out"
+                    className="stroke-primary fill-none transition-all duration-1000 ease-out"
                     strokeWidth="8"
                     strokeDasharray={2 * Math.PI * 40}
                     strokeDashoffset={2 * Math.PI * 40 * (1 - (isLoading ? 0 : analytics.productivityScore) / 100)}
@@ -543,7 +543,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                   />
                 </svg>
                 <div className="absolute text-center">
-                  <span className="text-3xl font-extrabold font-mono text-emerald-400">
+                  <span className="text-3xl font-extrabold font-mono text-primary">
                     {isLoading ? "-" : `${analytics.productivityScore}%`}
                   </span>
                   <span className="block text-[8px] uppercase tracking-widest text-muted-foreground font-mono mt-0.5">
@@ -555,15 +555,15 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
               {/* Sub Metrics list */}
               <div className="w-full grid grid-cols-3 gap-2 text-center text-xs font-mono border-t border-border/40 pt-4 mt-2">
                 <div>
-                  <span className="text-emerald-400 font-bold block">{isLoading ? "-" : analytics.activeGoals}</span>
+                  <span className="text-goal-text font-bold block">{isLoading ? "-" : analytics.activeGoals}</span>
                   <span className="text-[9px] text-muted-foreground">Active Goals</span>
                 </div>
                 <div className="border-x border-border/40">
-                  <span className="text-sky-400 font-bold block">{isLoading ? "-" : analytics.completedTasks}</span>
+                  <span className="text-task-text font-bold block">{isLoading ? "-" : analytics.completedTasks}</span>
                   <span className="text-[9px] text-muted-foreground">Tasks Done</span>
                 </div>
-                <div>
-                  <span className="text-amber-400 font-bold block">{isLoading ? "-" : analytics.upcomingDeadlines}</span>
+                <div className="border-x border-transparent">
+                  <span className="text-deadline-text font-bold block">{isLoading ? "-" : analytics.upcomingDeadlines}</span>
                   <span className="text-[9px] text-muted-foreground">Near Alerts</span>
                 </div>
               </div>
@@ -573,7 +573,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
           {/* SVG Weekly Completion Trend Bar Chart */}
           <Card className="lg:col-span-2 bg-card/40 border-border backdrop-blur-sm shadow-xl flex flex-col justify-between">
             <CardHeader className="pb-2">
-              <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
+              <CardTitle className="font-mono text-base text-primary flex items-center gap-2">
                 Weekly Completion Rate
               </CardTitle>
               <CardDescription className="text-xs">
@@ -610,13 +610,13 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                           <g key={i} className="group">
                             {/* Bar Count Tooltip background */}
                             <rect
-                              x={x - 4}
-                              y={y - 20}
-                              width={barWidth + 8}
-                              height="16"
-                              rx="4"
-                              className="fill-emerald-50 dark:fill-emerald-950 stroke-emerald-300 dark:stroke-emerald-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                              strokeWidth="1.5"
+                               x={x - 4}
+                               y={y - 20}
+                               width={barWidth + 8}
+                               height="16"
+                               rx="4"
+                               className="fill-goal-bg stroke-goal-border opacity-0 group-hover:opacity-100 transition-opacity"
+                               strokeWidth="1.5"
                             />
                             {/* Tooltip Count Text */}
                             <text
@@ -624,7 +624,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                               y={y - 8}
                               textAnchor="middle"
                               fill="currentColor"
-                              className="text-emerald-700 dark:text-emerald-400 font-mono text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="text-goal-text font-mono text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               {count}
                             </text>
@@ -635,7 +635,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                               width={barWidth}
                               height={Math.max(height, 4)} // guarantee visibility
                               rx="6"
-                              className="fill-emerald-500 hover:fill-emerald-400 transition-all duration-300 cursor-pointer shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                              className="fill-primary hover:fill-primary/80 transition-all duration-300 cursor-pointer"
                             />
                             {/* Week Label */}
                             <text
@@ -662,7 +662,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
         <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl p-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
             <div>
-              <h3 className="font-mono text-sm font-bold text-emerald-400">Task Priority Distribution</h3>
+              <h3 className="font-mono text-sm font-bold text-primary">Task Priority Distribution</h3>
               <p className="text-[10.5px] text-muted-foreground">Visual weight allocation of active canvas task items.</p>
             </div>
             <Badge variant="outline" className="font-mono text-[10px] bg-background/50">
@@ -680,27 +680,27 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                 const pctHigh = total > 0 ? (analytics.highPriorityTasks / total) * 100 : 0;
                 const pctMed = total > 0 ? (analytics.mediumPriorityTasks / total) * 100 : 0;
                 const pctLow = total > 0 ? (analytics.lowPriorityTasks / total) * 100 : 0;
-
+ 
                 return (
                   <div className="space-y-3">
                     <div className="h-4 w-full bg-muted rounded-full overflow-hidden flex">
                       {pctHigh > 0 && (
                         <div
-                          className="h-full bg-red-500 transition-all duration-500"
+                          className="h-full bg-urgent-text transition-all duration-500"
                           style={{ width: `${pctHigh}%` }}
                           title={`High Priority: ${analytics.highPriorityTasks}`}
                         />
                       )}
                       {pctMed > 0 && (
                         <div
-                          className="h-full bg-sky-500 transition-all duration-500"
+                          className="h-full bg-task-text transition-all duration-500"
                           style={{ width: `${pctMed}%` }}
                           title={`Medium Priority: ${analytics.mediumPriorityTasks}`}
                         />
                       )}
                       {pctLow > 0 && (
                         <div
-                          className="h-full bg-emerald-500 transition-all duration-500"
+                          className="h-full bg-goal-text transition-all duration-500"
                           style={{ width: `${pctLow}%` }}
                           title={`Low Priority: ${analytics.lowPriorityTasks}`}
                         />
@@ -710,19 +710,19 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                     {/* Legend Labels */}
                     <div className="grid grid-cols-3 gap-2 text-[10.5px] font-mono">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 bg-red-500 rounded-sm" />
+                        <div className="w-2.5 h-2.5 bg-urgent-text rounded-sm" />
                         <span className="text-muted-foreground">High:</span>
                         <span className="text-foreground font-bold">{analytics.highPriorityTasks}</span>
                         <span className="text-muted-foreground text-[9px]">({Math.round(pctHigh)}%)</span>
                       </div>
                       <div className="flex items-center gap-1.5 justify-center">
-                        <div className="w-2.5 h-2.5 bg-sky-500 rounded-sm" />
+                        <div className="w-2.5 h-2.5 bg-task-text rounded-sm" />
                         <span className="text-muted-foreground">Medium:</span>
                         <span className="text-foreground font-bold">{analytics.mediumPriorityTasks}</span>
                         <span className="text-muted-foreground text-[9px]">({Math.round(pctMed)}%)</span>
                       </div>
                       <div className="flex items-center gap-1.5 justify-end">
-                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-sm" />
+                        <div className="w-2.5 h-2.5 bg-goal-text rounded-sm" />
                         <span className="text-muted-foreground">Low:</span>
                         <span className="text-foreground font-bold">{analytics.lowPriorityTasks}</span>
                         <span className="text-muted-foreground text-[9px]">({Math.round(pctLow)}%)</span>
@@ -741,7 +741,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
         <DialogContent className="bg-card border-border text-foreground font-mono text-sm max-w-md">
           <form onSubmit={handleCreateCanvas} className="space-y-4">
             <DialogHeader>
-              <DialogTitle className="text-emerald-400 text-lg">
+              <DialogTitle className="text-primary text-lg">
                 {selectedTemplate ? `Launch Template: ${selectedTemplate}` : "Create New Canvas"}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -759,7 +759,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                   placeholder="e.g. Q3 Projects Mindmap"
                   required
                   disabled={isPending}
-                  className="bg-background border-border text-foreground focus-visible:ring-emerald-500 font-sans"
+                  className="bg-background border-border text-foreground focus-visible:ring-primary font-sans"
                 />
               </div>
               <div className="space-y-1.5">
@@ -771,7 +771,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                   placeholder="Optional description of key deliverables..."
                   disabled={isPending}
                   rows={3}
-                  className="bg-background border-border text-foreground focus-visible:ring-emerald-500 font-sans"
+                  className="bg-background border-border text-foreground focus-visible:ring-primary font-sans"
                 />
               </div>
             </div>
@@ -789,7 +789,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
               <Button
                 type="submit"
                 disabled={isPending}
-                className="bg-primary hover:bg-emerald-700 text-primary-foreground font-mono text-xs"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-mono text-xs"
               >
                 {isPending ? (
                   <>
@@ -806,9 +806,9 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
 
       {/* CONFIRM DELETE DIALOG */}
       <Dialog open={!!canvasToDelete} onOpenChange={(open) => !open && setCanvasToDelete(null)}>
-        <DialogContent className="bg-card border-border text-foreground font-mono text-sm max-w-sm">
+        <DialogContent className="bg-card border-border text-foreground font-mono text-xs max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-red-400 text-lg flex items-center gap-2">
+            <DialogTitle className="text-urgent-text text-lg flex items-center gap-2">
               Confirm Deletion
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -831,7 +831,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
               type="button"
               onClick={handleDeleteCanvas}
               disabled={isPending}
-              className="bg-red-950 hover:bg-red-800 text-red-200 border border-red-800/60 font-mono text-xs"
+              className="bg-urgent-bg text-urgent-text border border-urgent-border hover:bg-urgent-bg/80 font-mono text-xs"
             >
               {isPending ? (
                 <>
