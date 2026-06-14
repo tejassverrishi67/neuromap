@@ -1,36 +1,209 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NeuroMap
+
+### Plan → Connect → Execute
+
+NeuroMap is an AI-powered Visual Second Brain that helps students, developers, and professionals transform unstructured thoughts into actionable visual roadmaps. It combines intelligent planning, visual knowledge mapping, prioritization frameworks, and productivity analytics into a single workspace.
+
+---
+
+## Problem
+
+Students and builders often manage goals, tasks, deadlines, notes, and projects across multiple disconnected tools.
+
+This creates:
+
+* Fragmented planning
+* Missed deadlines
+* Poor visibility into priorities
+* Lack of connections between goals and actions
+
+---
+
+## Solution
+
+NeuroMap provides a visual second-brain system where users can:
+
+* Capture thoughts using Smart Brain Dump
+* Convert ideas into structured visual nodes
+* Connect goals, tasks, notes, and deadlines
+* Detect scheduling conflicts
+* Prioritize work using the Eisenhower Matrix
+* Track productivity through analytics
+
+---
+
+## Key Features
+
+### 🧠 Smart Brain Dump
+
+Convert unstructured text into:
+
+* Goals
+* Tasks
+* Deadlines
+* Notes
+
+### 🗺️ Visual Canvas
+
+Interactive node-based planning workspace built using React Flow.
+
+### 🔗 Smart Connections
+
+Automatically generate meaningful relationships between goals, tasks, and deadlines.
+
+### 📊 Productivity Analytics
+
+Track:
+
+* Active Goals
+* Task Completion
+* Upcoming Deadlines
+* Productivity Score
+
+### ⚠️ Conflict Detection
+
+Identify:
+
+* Deadline overloads
+* Scheduling conflicts
+* Productivity bottlenecks
+
+### 🎯 Eisenhower Matrix
+
+Organize work based on urgency and importance.
+
+### ↩️ Undo / Redo
+
+Professional canvas editing with keyboard shortcuts.
+
+### 🎨 Light & Dark Mode
+
+Fully theme-aware experience.
+
+### 💾 Import / Export
+
+Backup and restore NeuroMap workspaces.
+
+---
+
+## Tech Stack
+
+### Frontend
+
+* Next.js 16
+* React 19
+* TypeScript
+* Tailwind CSS
+* shadcn/ui
+* React Flow
+
+### Backend
+
+* Node.js (Next.js App Router)
+
+### Storage
+
+* Browser Persistence (Local Storage)
+
+### Deployment
+
+* Vercel
+
+---
+
+## Architecture
+
+```text
+Brain Dump
+    ↓
+Parser Engine
+    ↓
+Node Generation
+    ↓
+Visual Canvas
+    ↓
+Conflict Detection
+    ↓
+Analytics Dashboard
+```
+
+---
+
+## Live Demo
+
+https://neuromap-sooty.vercel.app/
+
+---
+
+## Screenshots
+
+### Dashboard
+
+![Dashboard](docs/dashboard.png)
+
+### Smart Brain Dump
+
+![Brain Dump](docs/brain-dump.png)
+
+### Visual Canvas
+
+![Canvas](docs/canvas.png)
+
+### Eisenhower Matrix
+
+![Eisenhower Matrix](docs/eisenhower.png)
+
+### Light Mode
+
+![Light Mode](docs/light-mode.png)
+
+---
+
+## Demo Video
+
+Coming Soon
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Run Locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Live Deployment
 
-## Learn More
+NeuroMap is publicly available at:
 
-To learn more about Next.js, take a look at the following resources:
+https://neuromap-sooty.vercel.app/
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Future Improvements
 
-## Deploy on Vercel
+* Cloud Synchronization
+* Real-Time Collaboration
+* AI-Powered Planning Assistant
+* Calendar Integrations
+* Mobile Application
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Hackathon Submission
+
+Built for **Devlynix Buildathon 2.0**
+
+NeuroMap empowers users to transform ideas into connected action plans through visual thinking, intelligent organization, and interactive productivity workflows.
+
+### Tagline
+
+**Plan → Connect → Execute**
