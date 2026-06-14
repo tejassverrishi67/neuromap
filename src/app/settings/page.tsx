@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { 
   Settings, 
   Database, 
@@ -9,14 +9,26 @@ import {
   ShieldCheck, 
   Download, 
   Upload, 
-  Loader2 
+  Loader2,
+  Sun,
+  Moon,
+  Monitor,
+  Palette
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 export default function SettingsPage() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isDbConnected = false;
   const connectionStateString = "Development Mode";
   const databaseName = "Local Storage (Sandbox)";
@@ -134,6 +146,7 @@ export default function SettingsPage() {
               totalNotes: imported.nodes.filter((n: any) => n.data?.nodeType === "note").length,
             },
             lastActivity: new Date().toISOString(),
+            lastOpenedAt: new Date().toISOString(),
             createdAt: imported.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString()
           };
@@ -165,7 +178,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12 overflow-y-auto h-full">
+    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12">
       {/* Page Header */}
       <div className="border-b border-border pb-6">
         <h1 className="text-3xl font-bold tracking-tight font-mono text-emerald-400 flex items-center gap-3">
@@ -241,6 +254,54 @@ export default function SettingsPage() {
               </div>
             ))}
           </CardContent>
+        </Card>
+
+        {/* Theme Preference Settings Card */}
+        <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl md:col-span-2">
+          <CardHeader>
+            <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
+              <Palette className="w-5 h-5 text-emerald-500" /> Theme Configuration
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Select your visual styling interface preference.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-2">
+            {[
+              { id: "light", label: "Light Mode", icon: Sun, desc: "Clean gray & white layout" },
+              { id: "dark", label: "Dark Mode", icon: Moon, desc: "Silent Coder default layout" },
+              { id: "system", label: "System Sync", icon: Monitor, desc: "Adapts to system preferences" }
+            ].map((tOption) => {
+              const active = mounted && theme === tOption.id;
+              const IconComp = tOption.icon;
+              return (
+                <button
+                  key={tOption.id}
+                  onClick={() => {
+                    setTheme(tOption.id);
+                    toast.success(`Theme set to ${tOption.label}`);
+                  }}
+                  className={`p-4 rounded-xl border text-left flex flex-col justify-between h-28 hover:scale-[1.01] transition-all font-mono group ${
+                    active
+                      ? "border-emerald-500 bg-emerald-950/20 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                      : "border-border bg-background/30 hover:border-border/80 hover:bg-background/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <IconComp className={`w-5 h-5 ${active ? "text-emerald-400" : "text-muted-foreground group-hover:text-foreground"}`} />
+                    {active && <Badge className="bg-emerald-950 text-emerald-400 border border-emerald-900 font-mono text-[9px] px-1 py-0 select-none">Active</Badge>}
+                  </div>
+                  <div>
+                    <span className="block text-xs font-bold font-sans mt-2">{tOption.label}</span>
+                    <span className="block text-[9px] mt-0.5 opacity-80">{tOption.desc}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </CardContent>
+          <CardFooter className="text-[10px] text-muted-foreground border-t border-border/40 pt-4">
+            Theme preference is cached instantly and synchronized across all pages.
+          </CardFooter>
         </Card>
 
         {/* Data Portability (Import/Export Backup) Card */}

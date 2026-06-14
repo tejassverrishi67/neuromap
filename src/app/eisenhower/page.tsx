@@ -279,7 +279,7 @@ export default function EisenhowerPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12 overflow-y-auto h-full">
+    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12">
       {/* Page Header */}
       <div className="border-b border-border pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -329,17 +329,16 @@ export default function EisenhowerPage() {
           </div>
         </Card>
       ) : (
-        /* The 2x2 Quadrant Visual Grid */
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           
           {/* QUADRANT I: Urgent + Important */}
-          <Card className="bg-card/30 border-red-950/60 shadow-xl flex flex-col justify-between overflow-hidden">
-            <CardHeader className="bg-red-950/10 border-b border-red-950/30 p-4">
+          <Card className="bg-card border-red-200 dark:border-red-950/60 shadow-xl flex flex-col justify-between overflow-hidden transition-all hover:shadow-2xl">
+            <CardHeader className="bg-red-50/50 dark:bg-red-950/10 border-b border-red-100 dark:border-red-950/30 p-4">
               <div className="flex justify-between items-center">
-                <CardTitle className="font-mono text-sm font-bold text-red-400 flex items-center gap-2">
+                <CardTitle className="font-mono text-sm font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-red-500" /> I. Urgent + Important (Do First)
                 </CardTitle>
-                <Badge className="bg-red-950/50 text-red-400 border border-red-900/30 text-[9px] font-mono">
+                <Badge className="bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/30 text-[9px] font-mono">
                   {tasks.filter(t => t.quadrant === "q1").length} Tasks
                 </Badge>
               </div>
@@ -349,7 +348,7 @@ export default function EisenhowerPage() {
             </CardHeader>
             <CardContent className="p-4 space-y-3 flex-1 overflow-y-auto max-h-80 min-h-60">
               {tasks.filter(t => t.quadrant === "q1").map(task => (
-                <div key={task.id} className="p-3 rounded-lg border border-red-900/15 bg-background/20 flex justify-between gap-3 text-xs">
+                <div key={task.id} className="p-3 rounded-lg border border-red-200/50 dark:border-red-900/15 bg-red-50/10 dark:bg-background/20 flex justify-between gap-3 text-xs transition-colors hover:bg-red-50/20 dark:hover:bg-muted/10">
                   <div className="flex items-start gap-2.5 min-w-0">
                     <input
                       type="checkbox"
@@ -359,7 +358,7 @@ export default function EisenhowerPage() {
                     />
                     <div className="min-w-0">
                       <p className={`font-semibold ${task.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>{task.title}</p>
-                      {task.dueDate && <span className="text-[9px] text-red-400 font-mono">Due: {new Date(task.dueDate).toLocaleDateString()}</span>}
+                      {task.dueDate && <span className="text-[9px] text-red-600 dark:text-red-400 font-mono font-medium">Due: {new Date(task.dueDate).toLocaleDateString()}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
@@ -373,7 +372,7 @@ export default function EisenhowerPage() {
                         <SelectItem value="q4">Eliminate (Q4)</SelectItem>
                       </SelectContent>
                     </Select>
-                    <button onClick={() => handleDeleteTask(task.id)} className="text-muted-foreground hover:text-red-400 transition-colors" title="Delete node">
+                    <button onClick={() => handleDeleteTask(task.id)} className="text-muted-foreground hover:text-red-500 transition-colors" title="Delete node">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -385,28 +384,28 @@ export default function EisenhowerPage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="bg-red-950/5 border-t border-red-950/20 p-2.5 flex gap-2">
+            <CardFooter className="bg-red-50/10 dark:bg-red-950/5 border-t border-red-100 dark:border-red-950/20 p-2.5 flex gap-2">
               <Input
                 value={newTaskTitle.q1}
                 onChange={(e) => setNewTaskTitle(prev => ({ ...prev, q1: e.target.value }))}
                 placeholder="Convert new urgent task... (Press enter)"
                 onKeyDown={(e) => e.key === "Enter" && handleCreateTaskInQuadrant("q1")}
-                className="h-8 text-xs bg-background/50"
+                className="h-8 text-xs bg-background/50 border-red-200/55 dark:border-red-900/30 focus-visible:ring-red-500"
               />
-              <Button onClick={() => handleCreateTaskInQuadrant("q1")} size="icon" className="h-8 w-8 bg-red-950 hover:bg-red-900 border border-red-900/40 text-red-400">
+              <Button onClick={() => handleCreateTaskInQuadrant("q1")} size="icon" className="h-8 w-8 bg-red-100 hover:bg-red-200 dark:bg-red-950 dark:hover:bg-red-900 border border-red-200/50 dark:border-red-900/40 text-red-700 dark:text-red-400 shrink-0">
                 <Plus className="w-4 h-4" />
               </Button>
             </CardFooter>
           </Card>
 
           {/* QUADRANT II: Important + Not Urgent */}
-          <Card className="bg-card/30 border-emerald-950/60 shadow-xl flex flex-col justify-between overflow-hidden">
-            <CardHeader className="bg-emerald-950/10 border-b border-emerald-950/30 p-4">
+          <Card className="bg-card border-emerald-200 dark:border-emerald-950/60 shadow-xl flex flex-col justify-between overflow-hidden transition-all hover:shadow-2xl">
+            <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/10 border-b border-emerald-100 dark:border-emerald-950/30 p-4">
               <div className="flex justify-between items-center">
-                <CardTitle className="font-mono text-sm font-bold text-emerald-400 flex items-center gap-2">
+                <CardTitle className="font-mono text-sm font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                   <Compass className="w-4 h-4 text-emerald-500" /> II. Important + Not Urgent (Schedule)
                 </CardTitle>
-                <Badge className="bg-emerald-950/50 text-emerald-400 border border-emerald-900/30 text-[9px] font-mono">
+                <Badge className="bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 text-[9px] font-mono">
                   {tasks.filter(t => t.quadrant === "q2").length} Tasks
                 </Badge>
               </div>
@@ -416,7 +415,7 @@ export default function EisenhowerPage() {
             </CardHeader>
             <CardContent className="p-4 space-y-3 flex-1 overflow-y-auto max-h-80 min-h-60">
               {tasks.filter(t => t.quadrant === "q2").map(task => (
-                <div key={task.id} className="p-3 rounded-lg border border-emerald-900/15 bg-background/20 flex justify-between gap-3 text-xs">
+                <div key={task.id} className="p-3 rounded-lg border border-emerald-200/50 dark:border-emerald-900/15 bg-emerald-50/10 dark:bg-background/20 flex justify-between gap-3 text-xs transition-colors hover:bg-emerald-50/20 dark:hover:bg-muted/10">
                   <div className="flex items-start gap-2.5 min-w-0">
                     <input
                       type="checkbox"
@@ -439,7 +438,7 @@ export default function EisenhowerPage() {
                         <SelectItem value="q4">Eliminate (Q4)</SelectItem>
                       </SelectContent>
                     </Select>
-                    <button onClick={() => handleDeleteTask(task.id)} className="text-muted-foreground hover:text-red-400 transition-colors" title="Delete node">
+                    <button onClick={() => handleDeleteTask(task.id)} className="text-muted-foreground hover:text-red-500 transition-colors" title="Delete node">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -451,28 +450,28 @@ export default function EisenhowerPage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="bg-emerald-950/5 border-t border-emerald-950/20 p-2.5 flex gap-2">
+            <CardFooter className="bg-emerald-50/10 dark:bg-emerald-950/5 border-t border-emerald-100 dark:border-emerald-950/20 p-2.5 flex gap-2">
               <Input
                 value={newTaskTitle.q2}
                 onChange={(e) => setNewTaskTitle(prev => ({ ...prev, q2: e.target.value }))}
                 placeholder="Convert new goal task... (Press enter)"
                 onKeyDown={(e) => e.key === "Enter" && handleCreateTaskInQuadrant("q2")}
-                className="h-8 text-xs bg-background/50"
+                className="h-8 text-xs bg-background/50 border-emerald-200/55 dark:border-emerald-900/30 focus-visible:ring-emerald-500"
               />
-              <Button onClick={() => handleCreateTaskInQuadrant("q2")} size="icon" className="h-8 w-8 bg-emerald-950 hover:bg-emerald-900 border border-emerald-900/40 text-emerald-400">
+              <Button onClick={() => handleCreateTaskInQuadrant("q2")} size="icon" className="h-8 w-8 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950 dark:hover:bg-emerald-900 border border-emerald-200/50 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 shrink-0">
                 <Plus className="w-4 h-4" />
               </Button>
             </CardFooter>
           </Card>
 
           {/* QUADRANT III: Urgent + Not Important */}
-          <Card className="bg-card/30 border-sky-950/60 shadow-xl flex flex-col justify-between overflow-hidden">
-            <CardHeader className="bg-sky-950/10 border-b border-sky-950/30 p-4">
+          <Card className="bg-card border-sky-200 dark:border-sky-950/60 shadow-xl flex flex-col justify-between overflow-hidden transition-all hover:shadow-2xl">
+            <CardHeader className="bg-sky-50/50 dark:bg-sky-950/10 border-b border-sky-100 dark:border-sky-950/30 p-4">
               <div className="flex justify-between items-center">
-                <CardTitle className="font-mono text-sm font-bold text-sky-400 flex items-center gap-2">
+                <CardTitle className="font-mono text-sm font-bold text-sky-700 dark:text-sky-400 flex items-center gap-2">
                   <CheckSquare className="w-4 h-4 text-sky-500" /> III. Urgent + Not Important (Delegate)
                 </CardTitle>
-                <Badge className="bg-sky-950/50 text-sky-400 border border-sky-900/30 text-[9px] font-mono">
+                <Badge className="bg-sky-100 dark:bg-sky-950/50 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-900/30 text-[9px] font-mono">
                   {tasks.filter(t => t.quadrant === "q3").length} Tasks
                 </Badge>
               </div>
@@ -482,7 +481,7 @@ export default function EisenhowerPage() {
             </CardHeader>
             <CardContent className="p-4 space-y-3 flex-1 overflow-y-auto max-h-80 min-h-60">
               {tasks.filter(t => t.quadrant === "q3").map(task => (
-                <div key={task.id} className="p-3 rounded-lg border border-sky-900/15 bg-background/20 flex justify-between gap-3 text-xs">
+                <div key={task.id} className="p-3 rounded-lg border border-sky-200/50 dark:border-sky-900/15 bg-sky-50/10 dark:bg-background/20 flex justify-between gap-3 text-xs transition-colors hover:bg-sky-50/20 dark:hover:bg-muted/10">
                   <div className="flex items-start gap-2.5 min-w-0">
                     <input
                       type="checkbox"
@@ -492,7 +491,7 @@ export default function EisenhowerPage() {
                     />
                     <div className="min-w-0">
                       <p className={`font-semibold ${task.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>{task.title}</p>
-                      {task.dueDate && <span className="text-[9px] text-sky-400 font-mono">Due: {new Date(task.dueDate).toLocaleDateString()}</span>}
+                      {task.dueDate && <span className="text-[9px] text-sky-600 dark:text-sky-400 font-mono font-medium">Due: {new Date(task.dueDate).toLocaleDateString()}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
@@ -506,7 +505,7 @@ export default function EisenhowerPage() {
                         <SelectItem value="q4">Eliminate (Q4)</SelectItem>
                       </SelectContent>
                     </Select>
-                    <button onClick={() => handleDeleteTask(task.id)} className="text-muted-foreground hover:text-red-400 transition-colors" title="Delete node">
+                    <button onClick={() => handleDeleteTask(task.id)} className="text-muted-foreground hover:text-red-500 transition-colors" title="Delete node">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -518,28 +517,28 @@ export default function EisenhowerPage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="bg-sky-950/5 border-t border-sky-950/20 p-2.5 flex gap-2">
+            <CardFooter className="bg-sky-50/10 dark:bg-sky-950/5 border-t border-sky-100 dark:border-sky-950/20 p-2.5 flex gap-2">
               <Input
                 value={newTaskTitle.q3}
                 onChange={(e) => setNewTaskTitle(prev => ({ ...prev, q3: e.target.value }))}
-                placeholder="Convert busywork task... (Press enter)"
+                placeholder="Convert new busywork task... (Press enter)"
                 onKeyDown={(e) => e.key === "Enter" && handleCreateTaskInQuadrant("q3")}
-                className="h-8 text-xs bg-background/50"
+                className="h-8 text-xs bg-background/50 border-sky-200/55 dark:border-sky-900/30 focus-visible:ring-sky-500"
               />
-              <Button onClick={() => handleCreateTaskInQuadrant("q3")} size="icon" className="h-8 w-8 bg-sky-950 hover:bg-sky-900 border border-sky-900/40 text-sky-400">
+              <Button onClick={() => handleCreateTaskInQuadrant("q3")} size="icon" className="h-8 w-8 bg-sky-100 hover:bg-sky-200 dark:bg-sky-950 dark:hover:bg-sky-900 border border-sky-200/50 dark:border-sky-900/40 text-sky-700 dark:text-sky-400 shrink-0">
                 <Plus className="w-4 h-4" />
               </Button>
             </CardFooter>
           </Card>
 
           {/* QUADRANT IV: Neither */}
-          <Card className="bg-card/30 border-purple-950/60 shadow-xl flex flex-col justify-between overflow-hidden">
-            <CardHeader className="bg-purple-950/10 border-b border-purple-950/30 p-4">
+          <Card className="bg-card border-purple-200 dark:border-purple-950/60 shadow-xl flex flex-col justify-between overflow-hidden transition-all hover:shadow-2xl">
+            <CardHeader className="bg-purple-50/50 dark:bg-purple-950/10 border-b border-purple-100 dark:border-purple-950/30 p-4">
               <div className="flex justify-between items-center">
-                <CardTitle className="font-mono text-sm font-bold text-purple-400 flex items-center gap-2">
+                <CardTitle className="font-mono text-sm font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2">
                   <Info className="w-4 h-4 text-purple-500" /> IV. Neither (Eliminate / Backlog)
                 </CardTitle>
-                <Badge className="bg-purple-950/50 text-purple-400 border border-purple-900/30 text-[9px] font-mono">
+                <Badge className="bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-900/30 text-[9px] font-mono">
                   {tasks.filter(t => t.quadrant === "q4").length} Tasks
                 </Badge>
               </div>
@@ -549,7 +548,7 @@ export default function EisenhowerPage() {
             </CardHeader>
             <CardContent className="p-4 space-y-3 flex-1 overflow-y-auto max-h-80 min-h-60">
               {tasks.filter(t => t.quadrant === "q4").map(task => (
-                <div key={task.id} className="p-3 rounded-lg border border-purple-900/15 bg-background/20 flex justify-between gap-3 text-xs">
+                <div key={task.id} className="p-3 rounded-lg border border-purple-200/50 dark:border-purple-900/15 bg-purple-50/10 dark:bg-background/20 flex justify-between gap-3 text-xs transition-colors hover:bg-purple-50/20 dark:hover:bg-muted/10">
                   <div className="flex items-start gap-2.5 min-w-0">
                     <input
                       type="checkbox"
@@ -572,7 +571,7 @@ export default function EisenhowerPage() {
                         <SelectItem value="q3">Delegate (Q3)</SelectItem>
                       </SelectContent>
                     </Select>
-                    <button onClick={() => handleDeleteTask(task.id)} className="text-muted-foreground hover:text-red-400 transition-colors" title="Delete node">
+                    <button onClick={() => handleDeleteTask(task.id)} className="text-muted-foreground hover:text-red-500 transition-colors" title="Delete node">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -584,15 +583,15 @@ export default function EisenhowerPage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="bg-purple-950/5 border-t border-purple-950/20 p-2.5 flex gap-2">
+            <CardFooter className="bg-purple-50/10 dark:bg-purple-950/5 border-t border-purple-100 dark:border-purple-950/20 p-2.5 flex gap-2">
               <Input
                 value={newTaskTitle.q4}
                 onChange={(e) => setNewTaskTitle(prev => ({ ...prev, q4: e.target.value }))}
                 placeholder="Convert new backlog task... (Press enter)"
                 onKeyDown={(e) => e.key === "Enter" && handleCreateTaskInQuadrant("q4")}
-                className="h-8 text-xs bg-background/50"
+                className="h-8 text-xs bg-background/50 border-purple-200/55 dark:border-purple-900/30 focus-visible:ring-purple-500"
               />
-              <Button onClick={() => handleCreateTaskInQuadrant("q4")} size="icon" className="h-8 w-8 bg-purple-950 hover:bg-purple-900 border border-purple-900/40 text-purple-400">
+              <Button onClick={() => handleCreateTaskInQuadrant("q4")} size="icon" className="h-8 w-8 bg-purple-100 hover:bg-purple-200 dark:bg-purple-950 dark:hover:bg-purple-900 border border-purple-200/50 dark:border-purple-900/40 text-purple-700 dark:text-purple-400 shrink-0">
                 <Plus className="w-4 h-4" />
               </Button>
             </CardFooter>

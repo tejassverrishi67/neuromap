@@ -48,8 +48,47 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* We override :root to be Dark Theme by default for the "Silent Coder" aesthetic */
+/* We set Light Theme as default inside :root and Dark Theme under .dark */
 :root {
+  --background: oklch(0.98 0.005 240);     /* Soft gray background */
+  --foreground: oklch(0.20 0.01 240);      /* Dark charcoal text */
+  --card: oklch(1 0 0);                    /* Pure white cards */
+  --card-foreground: oklch(0.20 0.01 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.20 0.01 240);
+  
+  --primary: oklch(0.52 0.16 142);         /* Forest Green Accent */
+  --primary-foreground: oklch(0.98 0.01 142);
+  
+  --secondary: oklch(0.94 0.01 240);       /* Light gray */
+  --secondary-foreground: oklch(0.25 0.01 240);
+  
+  --muted: oklch(0.96 0.005 240);
+  --muted-foreground: oklch(0.50 0.01 240);
+  
+  --accent: oklch(0.92 0.02 142);          /* Soft light forest green accent */
+  --accent-foreground: oklch(0.32 0.12 142);
+  
+  --destructive: oklch(0.60 0.18 25);
+  --destructive-foreground: oklch(0.98 0.01 25);
+  
+  --border: oklch(0.90 0.01 240);         /* Subtle light border */
+  --input: oklch(0.90 0.01 240);
+  --ring: oklch(0.52 0.16 142);
+  
+  --radius: 0.75rem;
+
+  --sidebar: oklch(0.97 0.005 240);
+  --sidebar-foreground: oklch(0.25 0.01 240);
+  --sidebar-primary: oklch(0.52 0.16 142);
+  --sidebar-primary-foreground: oklch(0.98 0.01 142);
+  --sidebar-accent: oklch(0.93 0.01 240);
+  --sidebar-accent-foreground: oklch(0.20 0.01 240);
+  --sidebar-border: oklch(0.90 0.01 240);
+  --sidebar-ring: oklch(0.52 0.16 142);
+}
+
+.dark {
   --background: oklch(0.12 0.015 250);     /* Deep charcoal background */
   --foreground: oklch(0.92 0.015 250);     /* Ice white / grey text */
   --card: oklch(0.15 0.02 250);           /* Dark grey cards */
@@ -76,8 +115,6 @@
   --input: oklch(0.22 0.02 250);
   --ring: oklch(0.52 0.16 142);
   
-  --radius: 0.75rem;
-
   --sidebar: oklch(0.13 0.015 250);
   --sidebar-foreground: oklch(0.85 0.015 250);
   --sidebar-primary: oklch(0.52 0.16 142);
@@ -88,45 +125,19 @@
   --sidebar-ring: oklch(0.52 0.16 142);
 }
 
-.dark {
-  /* Keep same as root to avoid contrast errors */
-  --background: oklch(0.12 0.015 250);
-  --foreground: oklch(0.92 0.015 250);
-  --card: oklch(0.15 0.02 250);
-  --card-foreground: oklch(0.92 0.015 250);
-  --popover: oklch(0.15 0.02 250);
-  --popover-foreground: oklch(0.92 0.015 250);
-  
-  --primary: oklch(0.52 0.16 142);
-  --primary-foreground: oklch(0.98 0.01 142);
-  
-  --secondary: oklch(0.20 0.02 250);
-  --secondary-foreground: oklch(0.85 0.02 250);
-  
-  --muted: oklch(0.18 0.02 250);
-  --muted-foreground: oklch(0.65 0.02 250);
-  
-  --accent: oklch(0.22 0.05 142);
-  --accent-foreground: oklch(0.78 0.12 142);
-  
-  --border: oklch(0.22 0.02 250);
-  --input: oklch(0.22 0.02 250);
-  --ring: oklch(0.52 0.16 142);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground selection:bg-emerald-950 selection:text-emerald-300;
+    @apply bg-background text-foreground transition-colors duration-200 selection:bg-emerald-950 selection:text-emerald-300;
   }
   html {
     @apply font-sans h-full overflow-hidden;
   }
 }
 
-/* React Flow Silent Coder Custom Styling */
+/* React Flow Custom Styling */
 .react-flow {
   background-color: var(--background);
 }
@@ -135,18 +146,45 @@
   opacity: 0.15;
 }
 
+/* Large 18px Hitbox and 8px Centered Dot Handles */
 .react-flow__handle {
-  width: 10px !important;
-  height: 10px !important;
-  background-color: oklch(0.65 0.18 142) !important;
-  border: 2px solid oklch(0.12 0.015 250) !important;
-  box-shadow: 0 0 4px oklch(0.65 0.18 142);
-  transition: transform 0.2s, background-color 0.2s;
+  width: 18px !important;
+  height: 18px !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: crosshair !important;
+  transition: transform 0.2s ease;
+  z-index: 10;
+}
+
+.react-flow__handle::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary) !important;
+  border: 1.5px solid var(--background) !important;
+  box-shadow: 0 0 4px var(--primary);
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .react-flow__handle:hover {
-  transform: scale(1.3);
-  background-color: oklch(0.75 0.2 142) !important;
+  transform: scale(1.4);
+}
+
+.react-flow__handle:hover::after {
+  background-color: oklch(0.65 0.18 142) !important;
+  box-shadow: 0 0 6px var(--primary);
+}
+
+.react-flow__handle-connecting::after,
+.react-flow__handle-valid::after {
+  transform: scale(1.2);
+  background-color: oklch(0.65 0.18 142) !important;
 }
 
 .react-flow__edge-path {
@@ -161,25 +199,25 @@
 }
 
 .react-flow__controls {
-  background: oklch(0.15 0.02 250) !important;
-  border: 1px solid oklch(0.22 0.02 250) !important;
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   overflow: hidden;
 }
 
 .react-flow__controls-button {
   background: transparent !important;
-  border-bottom: 1px solid oklch(0.22 0.02 250) !important;
-  fill: oklch(0.65 0.02 250) !important;
-  stroke: oklch(0.65 0.02 250);
+  border-bottom: 1px solid var(--border) !important;
+  fill: var(--muted-foreground) !important;
+  stroke: var(--muted-foreground);
   transition: background-color 0.2s, fill 0.2s;
 }
 
 .react-flow__controls-button:hover {
-  background: oklch(0.2 0.02 250) !important;
-  fill: oklch(0.68 0.19 142) !important;
-  stroke: oklch(0.68 0.19 142) !important;
+  background: var(--secondary) !important;
+  fill: var(--primary) !important;
+  stroke: var(--primary) !important;
 }
 
 .react-flow__controls-button svg {
@@ -193,14 +231,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: oklch(0.12 0.015 250);
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.22 0.02 250);
+  background: var(--border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.3 0.02 250);
+  background: var(--muted-foreground);
 }

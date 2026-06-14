@@ -72,6 +72,12 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
     { nodes: 0, goals: 0, tasks: 0, deadlines: 0, notes: 0 }
   );
 
+  const recentCanvases = useMemo(() => {
+    return canvases
+      .filter((c) => c.lastOpenedAt)
+      .sort((a, b) => new Date(b.lastOpenedAt!).getTime() - new Date(a.lastOpenedAt!).getTime());
+  }, [canvases]);
+
   // Dynamic productivity insights computation
   const analytics = useMemo(() => {
     let goalsCount = 0;
@@ -246,7 +252,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12 overflow-y-auto h-full">
+    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12">
       {/* Top Welcome Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
@@ -379,15 +385,15 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { name: "Career Roadmap", desc: "SDE placement & resume milestones", icon: Trophy, color: "text-emerald-500 bg-emerald-950/45" },
-              { name: "Placement Preparation", desc: "Algorithmic study nodes & LC status", icon: Target, color: "text-sky-500 bg-sky-950/45" },
-              { name: "Semester Planning", desc: "Academics assignments & office hours", icon: Calendar, color: "text-amber-500 bg-amber-950/45" },
-              { name: "Hackathon Planning", desc: "Build MVP checklist & pitches", icon: Sparkles, color: "text-purple-500 bg-purple-950/45" }
+              { name: "Career Roadmap", desc: "SDE placement & resume milestones", icon: Trophy, color: "text-emerald-500 bg-emerald-950/45", id: "seeded-career-roadmap" },
+              { name: "Placement Preparation", desc: "Algorithmic study nodes & LC status", icon: Target, color: "text-sky-500 bg-sky-950/45", id: "seeded-placement-preparation" },
+              { name: "Semester Planning", desc: "Academics assignments & office hours", icon: Calendar, color: "text-amber-500 bg-amber-950/45", id: "seeded-semester-planning" },
+              { name: "Hackathon Planning", desc: "Build MVP checklist & pitches", icon: Sparkles, color: "text-purple-500 bg-purple-950/45", id: "seeded-hackathon-planning" }
             ].map((t) => (
               <button
                 key={t.name}
-                onClick={() => openCreateDialog(t.name)}
-                className="w-full text-left p-3 rounded-xl border border-border/60 hover:border-emerald-500/30 bg-background/30 hover:bg-background/80 transition-all duration-200 flex items-center gap-3 group"
+                onClick={() => router.push(`/canvas/${t.id}`)}
+                className="w-full text-left p-3 rounded-xl border border-border/60 hover:border-emerald-500/30 bg-background/30 hover:bg-background/80 transition-all duration-200 flex items-center gap-3 group animate-fade-in"
               >
                 <div className={`p-2 rounded-lg ${t.color} shrink-0 group-hover:scale-105 transition-transform`}>
                   <t.icon className="w-4 h-4" />
@@ -429,13 +435,13 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                   </div>
                 ))}
               </div>
-            ) : canvases.length === 0 ? (
+            ) : recentCanvases.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center space-y-3">
                 <Workflow className="w-12 h-12 text-muted-foreground/30 animate-pulse" />
                 <div>
-                  <h4 className="text-sm font-semibold">No canvases found</h4>
+                  <h4 className="text-sm font-semibold">Nothing opened yet</h4>
                   <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                    Get started by creating a blank canvas or launching a roadmap template above.
+                    Open a roadmap or create a canvas to get started.
                   </p>
                 </div>
                 <Button onClick={() => openCreateDialog(null)} variant="outline" size="sm" className="border-border hover:border-emerald-950 font-mono text-xs">
@@ -444,7 +450,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
               </div>
             ) : (
               <div className="space-y-3 overflow-y-auto max-h-72 pr-1">
-                {canvases.map((canvas) => (
+                {recentCanvases.map((canvas) => (
                   <div
                     key={canvas._id}
                     className="p-4 rounded-xl border border-border/80 hover:border-emerald-500/20 bg-background/25 hover:bg-background/60 transition-all duration-200 flex items-center justify-between gap-4"
@@ -462,7 +468,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                         {canvas.description || "No description provided."}
                       </p>
                       <div className="flex items-center gap-4 mt-2 text-[10px] text-muted-foreground font-mono">
-                        <span>Activity: {formatActivityDate(canvas.lastActivity || canvas.updatedAt)}</span>
+                        <span>Activity: {formatActivityDate(canvas.lastOpenedAt || canvas.updatedAt)}</span>
                       </div>
                     </div>
 
@@ -583,11 +589,11 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                 <div className="w-full">
                   {/* Clean Pure-SVG Bar Chart */}
                   <svg className="w-full h-40" viewBox="0 0 320 160">
-                    {/* Horizontal Guideline lines */}
-                    <line x1="10" y1="20" x2="310" y2="20" stroke="oklch(0.22 0.02 250)" strokeWidth="1" strokeDasharray="3,3" />
-                    <line x1="10" y1="60" x2="310" y2="60" stroke="oklch(0.22 0.02 250)" strokeWidth="1" strokeDasharray="3,3" />
-                    <line x1="10" y1="100" x2="310" y2="100" stroke="oklch(0.22 0.02 250)" strokeWidth="1" strokeDasharray="3,3" />
-                    <line x1="10" y1="130" x2="310" y2="130" stroke="oklch(0.22 0.02 250)" strokeWidth="1" />
+                    {/* Guidelines and grid ticks */}
+                    <line x1="10" y1="20" x2="310" y2="20" stroke="currentColor" className="text-border/60" strokeWidth="1" strokeDasharray="3,3" />
+                    <line x1="10" y1="60" x2="310" y2="60" stroke="currentColor" className="text-border/60" strokeWidth="1" strokeDasharray="3,3" />
+                    <line x1="10" y1="100" x2="310" y2="100" stroke="currentColor" className="text-border/60" strokeWidth="1" strokeDasharray="3,3" />
+                    <line x1="10" y1="130" x2="310" y2="130" stroke="currentColor" className="text-border" strokeWidth="1" />
                     
                     {/* Bars map */}
                     {(() => {
@@ -609,14 +615,16 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                               width={barWidth + 8}
                               height="16"
                               rx="4"
-                              className="fill-emerald-950 stroke-emerald-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="fill-emerald-50 dark:fill-emerald-950 stroke-emerald-300 dark:stroke-emerald-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                              strokeWidth="1.5"
                             />
                             {/* Tooltip Count Text */}
                             <text
                               x={x + barWidth / 2}
                               y={y - 8}
                               textAnchor="middle"
-                              className="fill-emerald-400 font-mono text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                              fill="currentColor"
+                              className="text-emerald-700 dark:text-emerald-400 font-mono text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               {count}
                             </text>
@@ -634,7 +642,8 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
                               x={x + barWidth / 2}
                               y="148"
                               textAnchor="middle"
-                              className="fill-muted-foreground font-mono text-[9px]"
+                              fill="currentColor"
+                              className="text-muted-foreground font-mono text-[9px]"
                             >
                               {weeklyCompletionData.labels[i]}
                             </text>

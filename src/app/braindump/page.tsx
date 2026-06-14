@@ -108,6 +108,7 @@ export default function BrainDumpPage() {
     }
 
     const newDump = {
+      // eslint-disable-next-line react-hooks/purity
       id: Date.now().toString(),
       text: inputText.trim(),
       date: "Just now",
@@ -336,7 +337,7 @@ export default function BrainDumpPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12 overflow-y-auto h-full">
+    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12">
       {/* Page Header */}
       <div className="border-b border-border pb-6">
         <h1 className="text-3xl font-bold tracking-tight font-mono text-emerald-400 flex items-center gap-3">

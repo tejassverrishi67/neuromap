@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -11,13 +11,28 @@ import {
   ChevronLeft, 
   ChevronRight,
   BrainCircuit,
-  LayoutGrid
+  LayoutGrid,
+  Sun,
+  Moon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentTheme = mounted ? resolvedTheme : "dark";
+
+  const toggleTheme = () => {
+    setTheme(currentTheme === "dark" ? "light" : "dark");
+  };
 
   const menuItems = [
     {
@@ -77,7 +92,7 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 py-6 px-3 space-y-1">
+        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Active = isActive(item);
             return (
@@ -105,8 +120,21 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Footer Toggle Button */}
-        <div className="p-3 border-t border-border flex justify-end">
+        {/* Footer Toggle and Theme Buttons */}
+        <div className={cn("p-3 border-t border-border flex items-center justify-between", isCollapsed && "flex-col gap-2 justify-center")}>
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-md hover:bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-all"
+            aria-label="Toggle theme"
+            title={currentTheme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {currentTheme === "dark" ? (
+              <Sun className="w-4 h-4 text-amber-500" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-700 dark:text-slate-300" />
+            )}
+          </button>
+
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-1.5 rounded-md hover:bg-muted/40 text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-all"
@@ -139,6 +167,19 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        {/* Mobile Theme Toggle quick action */}
+        <button
+          onClick={toggleTheme}
+          className="flex flex-col items-center justify-center w-16 h-12 rounded-lg gap-0.5 text-[10px] font-medium transition-colors text-muted-foreground"
+          aria-label="Toggle theme"
+        >
+          {currentTheme === "dark" ? (
+            <Sun className="w-5 h-5 text-amber-500" />
+          ) : (
+            <Moon className="w-5 h-5 text-slate-700" />
+          )}
+          <span>Theme</span>
+        </button>
       </nav>
     </>
   );

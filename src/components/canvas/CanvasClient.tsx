@@ -28,7 +28,9 @@ import {
   AlertTriangle, 
   ChevronLeft, 
   ChevronRight,
-  Focus
+  Focus,
+  Sun,
+  Moon
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,7 @@ import CustomNode from "./nodes/CustomNode";
 import CanvasToolbar from "./CanvasToolbar";
 import { updateCanvas, getCanvasById } from "@/lib/storage";
 import { detectDeadlineConflicts, ConflictInfo } from "@/lib/conflictDetector";
+import { useTheme } from "next-themes";
 
 // Define node types outside the component to prevent re-creation on render
 const nodeTypes = {
@@ -57,6 +60,14 @@ interface CanvasClientProps {
 function FlowEditor({ canvas }: CanvasClientProps) {
   const router = useRouter();
   const reactFlowInstance = useReactFlow();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentTheme = mounted ? resolvedTheme : "dark";
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(canvas.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(canvas.edges);
@@ -72,6 +83,21 @@ function FlowEditor({ canvas }: CanvasClientProps) {
   // Track if initial load is complete to avoid autosaving initial data
   const isLoadedRef = useRef(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // DB Sync trigger
+  const triggerDbSave = async (currentNodes: Node[], currentEdges: Edge[], currentViewport: Viewport) => {
+    try {
+      await updateCanvas(canvas._id, {
+        nodes: currentNodes as any[],
+        edges: currentEdges as any[],
+        viewport: currentViewport
+      });
+      setSaveStatus("saved");
+    } catch (err) {
+      console.error("Autosave database push failed:", err);
+      setSaveStatus("offline");
+    }
+  };
 
   // Load viewport on mount or when reactFlowInstance is ready
   useEffect(() => {
@@ -125,21 +151,6 @@ function FlowEditor({ canvas }: CanvasClientProps) {
     },
     [setEdges]
   );
-
-  // DB Sync trigger
-  const triggerDbSave = async (currentNodes: Node[], currentEdges: Edge[], currentViewport: Viewport) => {
-    try {
-      await updateCanvas(canvas._id, {
-        nodes: currentNodes as any[],
-        edges: currentEdges as any[],
-        viewport: currentViewport
-      });
-      setSaveStatus("saved");
-    } catch (err) {
-      console.error("Autosave database push failed:", err);
-      setSaveStatus("offline");
-    }
-  };
 
   // Debounced autosave controller
   const queueAutosave = useCallback(
@@ -463,6 +474,21 @@ function FlowEditor({ canvas }: CanvasClientProps) {
             className="text-xs font-mono h-8 border border-border/40 hover:border-emerald-900/50 bg-background/20"
           >
             <Save className="w-3.5 h-3.5 mr-1.5" /> Save
+          </Button>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground border border-border/40 bg-background/20 ml-1.5"
+            title={currentTheme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label="Toggle theme"
+          >
+            {currentTheme === "dark" ? (
+              <Sun className="w-4 h-4 text-amber-500" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-700 dark:text-slate-300" />
+            )}
           </Button>
         </div>
       </header>

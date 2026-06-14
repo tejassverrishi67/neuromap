@@ -17,6 +17,7 @@ export interface CanvasData {
     totalNotes: number;
   };
   lastActivity: string;
+  lastOpenedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -129,12 +130,18 @@ export async function getCanvases(): Promise<CanvasData[]> {
   return loadRawCanvases().sort((a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime());
 }
 
-// 2. Get specific canvas by ID
+// 2. Get specific canvas by ID (and mark as opened)
 export async function getCanvasById(id: string): Promise<CanvasData | null> {
   await new Promise((r) => setTimeout(r, 100));
   const list = loadRawCanvases();
-  const found = list.find((c) => c._id === id);
-  return found || null;
+  const idx = list.findIndex((c) => c._id === id);
+  if (idx === -1) return null;
+
+  const now = new Date().toISOString();
+  list[idx].lastOpenedAt = now;
+  saveRawCanvases(list);
+
+  return list[idx];
 }
 
 // 3. Create canvas (blank or template)
@@ -169,6 +176,7 @@ export async function createCanvas(name: string, description = "", templateName?
       totalNotes: initialNodes.filter((n) => n.data?.nodeType === "note").length,
     },
     lastActivity: now,
+    lastOpenedAt: now,
     createdAt: now,
     updatedAt: now
   };

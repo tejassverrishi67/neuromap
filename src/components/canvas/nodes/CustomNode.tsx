@@ -128,7 +128,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
     const diffMs = target.getTime() - now.getTime();
     
     if (diffMs < 0) {
-      return { text: "Overdue", color: "text-red-500 border-red-900/50 bg-red-950/20", urgency: "critical" };
+      return { text: "Overdue", color: "text-red-700 dark:text-red-500 border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20", urgency: "critical" };
     }
 
     const diffHours = diffMs / (1000 * 60 * 60);
@@ -137,7 +137,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
     if (diffHours <= threshold) {
       return {
         text: `${Math.round(diffHours)} hours left`,
-        color: "text-amber-500 border-amber-900/50 bg-amber-950/20",
+        color: "text-amber-700 dark:text-amber-500 border-amber-200 dark:border-amber-900/50 bg-amber-55 dark:bg-amber-950/20",
         urgency: "high"
       };
     }
@@ -145,7 +145,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
     const diffDays = Math.ceil(diffHours / 24);
     return {
       text: `${diffDays} days left`,
-      color: "text-emerald-500 border-emerald-900/30 bg-emerald-950/10",
+      color: "text-emerald-700 dark:text-emerald-500 border-emerald-200 dark:border-emerald-900/30 bg-emerald-50 dark:bg-emerald-950/10",
       urgency: "low"
     };
   };
@@ -156,27 +156,31 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
   const getPriorityBadge = (p: string) => {
     switch (p) {
       case "high":
-        return <Badge className="bg-red-950/30 text-red-400 border border-red-900/30 text-[10px] py-0 px-1.5 font-mono">High</Badge>;
+        return <Badge className="bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/30 text-[10px] py-0 px-1.5 font-mono select-none">High</Badge>;
       case "medium":
-        return <Badge className="bg-sky-950/30 text-sky-400 border border-sky-900/30 text-[10px] py-0 px-1.5 font-mono">Medium</Badge>;
+        return <Badge className="bg-sky-100 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-900/30 text-[10px] py-0 px-1.5 font-mono select-none">Medium</Badge>;
       default:
-        return <Badge className="bg-emerald-950/30 text-emerald-400 border border-emerald-900/30 text-[10px] py-0 px-1.5 font-mono">Low</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 text-[10px] py-0 px-1.5 font-mono select-none">Low</Badge>;
     }
   };
 
   // Node borders and headers styling based on type
   const typeConfigs = {
     goal: {
-      border: selected ? "border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]" : "border-emerald-900/50 hover:border-emerald-600/40",
-      headerBg: "bg-emerald-950/40 border-emerald-900/20",
-      iconColor: "text-emerald-400",
+      border: selected 
+        ? "border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]" 
+        : "border-emerald-200 dark:border-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-600/45",
+      headerBg: "bg-emerald-55 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/20",
+      iconColor: "text-emerald-600 dark:text-emerald-400",
       icon: Target,
       label: "Goal"
     },
     task: {
-      border: selected ? "border-sky-500 shadow-[0_0_12px_rgba(56,189,248,0.3)]" : "border-sky-900/50 hover:border-sky-600/40",
-      headerBg: "bg-sky-950/30 border-sky-900/20",
-      iconColor: "text-sky-400",
+      border: selected 
+        ? "border-sky-500 shadow-[0_0_12px_rgba(56,189,248,0.3)]" 
+        : "border-sky-200 dark:border-sky-900/50 hover:border-sky-400 dark:hover:border-sky-600/45",
+      headerBg: "bg-sky-55 dark:bg-sky-950/30 border-sky-100 dark:border-sky-900/20",
+      iconColor: "text-sky-600 dark:text-sky-400",
       icon: CheckSquare,
       label: "Task"
     },
@@ -184,19 +188,21 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
       border: selected 
         ? "border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)]" 
         : deadline.urgency === "critical"
-          ? "border-red-900 shadow-[0_0_8px_rgba(239,68,68,0.15)] hover:border-red-600"
+          ? "border-red-300 dark:border-red-900 shadow-[0_0_8px_rgba(239,68,68,0.1)] hover:border-red-500 dark:hover:border-red-600"
           : deadline.urgency === "high"
-            ? "border-amber-900 shadow-[0_0_8px_rgba(245,158,11,0.15)] hover:border-amber-600"
-            : "border-amber-900/50 hover:border-amber-600/40",
-      headerBg: "bg-amber-950/30 border-amber-900/20",
-      iconColor: "text-amber-400",
+            ? "border-amber-300 dark:border-amber-900 shadow-[0_0_8px_rgba(245,158,11,0.1)] hover:border-amber-500 dark:hover:border-amber-600"
+            : "border-amber-200 dark:border-amber-900/50 hover:border-amber-400 dark:hover:border-amber-600/45",
+      headerBg: "bg-amber-55 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900/20",
+      iconColor: "text-amber-600 dark:text-amber-400",
       icon: Clock,
       label: "Deadline"
     },
     note: {
-      border: selected ? "border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.3)]" : "border-purple-900/50 hover:border-purple-600/40",
-      headerBg: "bg-purple-950/30 border-purple-900/20",
-      iconColor: "text-purple-400",
+      border: selected 
+        ? "border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.3)]" 
+        : "border-purple-200 dark:border-purple-900/50 hover:border-purple-400 dark:hover:border-purple-600/45",
+      headerBg: "bg-purple-55 dark:bg-purple-950/30 border-purple-100 dark:border-purple-900/20",
+      iconColor: "text-purple-600 dark:text-purple-400",
       icon: FileText,
       label: "Note"
     }
@@ -219,7 +225,7 @@ function CustomNode({ id, data, selected }: CustomNodeProps) {
             {config.label}
           </span>
           {data.conflicts && data.conflicts.length > 0 && (
-            <Badge variant="outline" className="h-4 px-1 flex gap-0.5 border-red-900/60 bg-red-950/40 text-red-400 font-mono text-[8px] animate-pulse select-none">
+            <Badge variant="outline" className="h-4 px-1 flex gap-0.5 border-red-200 dark:border-red-900/60 bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 font-mono text-[8px] animate-pulse select-none">
               <AlertTriangle className="w-2.5 h-2.5" /> Alert
             </Badge>
           )}
