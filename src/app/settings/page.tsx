@@ -1,15 +1,29 @@
-import React from "react";
-import { Settings, Database, Keyboard, HelpCircle, HardDrive, ShieldCheck } from "lucide-react";
+"use client";
+
+import React, { useState, useRef } from "react";
+import { 
+  Settings, 
+  Database, 
+  Keyboard, 
+  HardDrive, 
+  ShieldCheck, 
+  Download, 
+  Upload, 
+  Loader2 
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-export const dynamic = "force-dynamic";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const isDbConnected = false;
   const connectionStateString = "Development Mode";
   const databaseName = "Local Storage (Sandbox)";
   const host = "Browser Cache";
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
 
   const shortcuts = [
     { keys: ["Double Click Pane"], desc: "Spawns note node at cursor" },
@@ -20,8 +34,138 @@ export default function SettingsPage() {
     { keys: ["Hold Space + Drag"], desc: "Pan across visual viewport" }
   ];
 
+  const handleExportAll = () => {
+    try {
+      const raw = localStorage.getItem("neuromap_canvases_store");
+      const list = raw ? JSON.parse(raw) : [];
+      if (list.length === 0) {
+        toast.error("No canvases found to export.");
+        return;
+      }
+      
+      const backupData = {
+        canvases: list,
+        backupVersion: "1.0",
+        backedUpAt: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `neuromap_backup_${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("All canvases exported successfully!");
+    } catch (e) {
+      toast.error("Failed to export backup");
+    }
+  };
+
+  const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    setIsImporting(true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const backup = JSON.parse(text);
+        
+        let canvasesToImport: any[] = [];
+        
+        // Support both single canvas export and full backup export
+        if (backup && Array.isArray(backup.canvases)) {
+          canvasesToImport = backup.canvases;
+        } else if (backup && typeof backup === "object" && backup.nodes && backup.edges) {
+          // Single canvas export
+          canvasesToImport = [backup];
+        } else {
+          throw new Error("Invalid file structure. Must be a canvas or backup JSON.");
+        }
+        
+        // Validate each canvas structure
+        const validCanvases = canvasesToImport.filter((c: any) => {
+          return (
+            c &&
+            typeof c === "object" &&
+            typeof c.name === "string" &&
+            Array.isArray(c.nodes) &&
+            Array.isArray(c.edges)
+          );
+        });
+        
+        if (validCanvases.length === 0) {
+          throw new Error("No valid canvases found in import file.");
+        }
+        
+        const raw = localStorage.getItem("neuromap_canvases_store");
+        const currentList = raw ? JSON.parse(raw) : [];
+        
+        let importCount = 0;
+        const mergedList = [...currentList];
+        
+        validCanvases.forEach((imported: any) => {
+          // Handle name collision by appending (Imported)
+          let finalName = imported.name;
+          const duplicateNameExists = currentList.some((c: any) => c.name.toLowerCase() === finalName.toLowerCase());
+          if (duplicateNameExists) {
+            finalName = `${imported.name} (Imported)`;
+          }
+          
+          // Guarantee unique ID
+          const finalId = `local-imported-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+          
+          const cleanCanvas = {
+            _id: finalId,
+            name: finalName,
+            description: imported.description || "",
+            nodes: imported.nodes,
+            edges: imported.edges,
+            viewport: imported.viewport || { x: 0, y: 0, zoom: 1 },
+            metadata: imported.metadata || {
+              totalNodes: imported.nodes.length,
+              totalGoals: imported.nodes.filter((n: any) => n.data?.nodeType === "goal").length,
+              totalTasks: imported.nodes.filter((n: any) => n.data?.nodeType === "task").length,
+              totalDeadlines: imported.nodes.filter((n: any) => n.data?.nodeType === "deadline").length,
+              totalNotes: imported.nodes.filter((n: any) => n.data?.nodeType === "note").length,
+            },
+            lastActivity: new Date().toISOString(),
+            createdAt: imported.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          
+          mergedList.push(cleanCanvas);
+          importCount++;
+        });
+        
+        localStorage.setItem("neuromap_canvases_store", JSON.stringify(mergedList));
+        toast.success(`Successfully imported ${importCount} canvas(es)!`);
+        
+        // Reload page to re-fetch loaded canvases list
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } catch (err: any) {
+        console.error(err);
+        toast.error(`Import failed: ${err.message || "Invalid JSON schema"}`);
+      } finally {
+        setIsImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read file.");
+      setIsImporting(false);
+    };
+    reader.readAsText(file);
+  };
+
   return (
-    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-32">
+    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12 overflow-y-auto h-full">
       {/* Page Header */}
       <div className="border-b border-border pb-6">
         <h1 className="text-3xl font-bold tracking-tight font-mono text-emerald-400 flex items-center gap-3">
@@ -97,6 +241,61 @@ export default function SettingsPage() {
               </div>
             ))}
           </CardContent>
+        </Card>
+
+        {/* Data Portability (Import/Export Backup) Card */}
+        <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl md:col-span-2">
+          <CardHeader>
+            <CardTitle className="font-mono text-base text-emerald-400 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-500" /> Data Portability & Backup
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Export all canvases to a backup file, or restore/import canvases from a previous JSON export.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col sm:flex-row items-center gap-4 py-2">
+            <Button
+              onClick={handleExportAll}
+              variant="outline"
+              className="w-full sm:w-auto font-mono text-xs border border-border/40 hover:border-emerald-500/30 gap-2 h-9 px-4"
+              title="Download all canvases as a JSON backup"
+            >
+              <Download className="w-4 h-4 text-emerald-400" /> Export System Backup
+            </Button>
+            
+            <div className="w-full sm:w-auto relative">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImportFile}
+                accept=".json"
+                className="hidden"
+                disabled={isImporting}
+              />
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+                className="w-full sm:w-auto font-mono text-xs border border-border/40 hover:border-emerald-500/30 gap-2 h-9 px-4"
+                disabled={isImporting}
+                title="Upload and restore canvases from a JSON backup file"
+              >
+                {isImporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                    Importing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 text-emerald-400" />
+                    Import Canvas Backup
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+          <CardFooter className="text-[10px] text-muted-foreground border-t border-border/40 pt-4">
+            Imports are validated for structural integrity to prevent corruption. Duplicate canvas names are automatically appended with "(Imported)".
+          </CardFooter>
         </Card>
 
         {/* System Details / Specifications */}

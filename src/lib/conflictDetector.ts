@@ -58,44 +58,46 @@ export function detectDeadlineConflicts(nodes: any[], edges: any[]): Record<stri
   });
   
   // 2. Detect Overlapping priorities (High priority deadlines due within 48 hours of each other)
-  // Let's compare every pair of deadlines
-  for (let i = 0; i < deadlineNodes.length; i++) {
-    for (let j = i + 1; j < deadlineNodes.length; j++) {
-      const nodeA = deadlineNodes[i];
-      const nodeB = deadlineNodes[j];
-      
-      const timeA = new Date(nodeA.data.dueDate).getTime();
+  // Sort deadlines by date to perform O(N log N) sliding window search
+  const sortedDeadlines = [...deadlineNodes].sort((a, b) => {
+    return new Date(a.data.dueDate).getTime() - new Date(b.data.dueDate).getTime();
+  });
+  
+  for (let i = 0; i < sortedDeadlines.length; i++) {
+    const nodeA = sortedDeadlines[i];
+    const timeA = new Date(nodeA.data.dueDate).getTime();
+    
+    for (let j = i + 1; j < sortedDeadlines.length; j++) {
+      const nodeB = sortedDeadlines[j];
       const timeB = new Date(nodeB.data.dueDate).getTime();
-      const diffMs = Math.abs(timeA - timeB);
+      const diffMs = timeB - timeA; // since sorted, timeB is always >= timeA
       const diffHours = diffMs / (1000 * 60 * 60);
       
-      if (diffHours <= 48) {
-        // If both are high-priority, or we flag if they overlap in a tight window
-        const isHighA = nodeA.data.priority === "high" || nodeA.data.warningThreshold <= 24;
-        const isHighB = nodeB.data.priority === "high" || nodeB.data.warningThreshold <= 24;
+      // Since deadlines are sorted, once we see a difference > 48h, all subsequent elements will also be > 48h
+      if (diffHours > 48) break;
+      
+      const isHighA = nodeA.data.priority === "high" || nodeA.data.warningThreshold <= 24;
+      const isHighB = nodeB.data.priority === "high" || nodeB.data.warningThreshold <= 24;
+      
+      if (isHighA || isHighB) {
+        if (!conflictsMap[nodeA.id]) conflictsMap[nodeA.id] = [];
+        if (!conflictsMap[nodeB.id]) conflictsMap[nodeB.id] = [];
         
-        if (isHighA || isHighB) {
-          if (!conflictsMap[nodeA.id]) conflictsMap[nodeA.id] = [];
-          if (!conflictsMap[nodeB.id]) conflictsMap[nodeB.id] = [];
-          
-          const msg = `Overlapping priority: due within ${Math.round(diffHours)} hours of another critical milestone ("${nodeA.id === nodeB.id ? '' : (nodeB.data.title || 'Untitled')}")`;
-          
-          conflictsMap[nodeA.id].push({
-            nodeId: nodeA.id,
-            type: "overlapping-priorities",
-            severity: "medium",
-            message: `Overlapping priority: due within ${Math.round(diffHours)} hours of "${nodeB.data.title || 'Untitled'}"`,
-            rescheduleSuggestion: `Reschedule one of these deadlines to create a buffer period.`
-          });
-          
-          conflictsMap[nodeB.id].push({
-            nodeId: nodeB.id,
-            type: "overlapping-priorities",
-            severity: "medium",
-            message: `Overlapping priority: due within ${Math.round(diffHours)} hours of "${nodeA.data.title || 'Untitled'}"`,
-            rescheduleSuggestion: `Reschedule one of these deadlines to create a buffer period.`
-          });
-        }
+        conflictsMap[nodeA.id].push({
+          nodeId: nodeA.id,
+          type: "overlapping-priorities",
+          severity: "medium",
+          message: `Overlapping priority: due within ${Math.round(diffHours)} hours of "${nodeB.data.title || 'Untitled'}"`,
+          rescheduleSuggestion: `Reschedule one of these deadlines to create a buffer period.`
+        });
+        
+        conflictsMap[nodeB.id].push({
+          nodeId: nodeB.id,
+          type: "overlapping-priorities",
+          severity: "medium",
+          message: `Overlapping priority: due within ${Math.round(diffHours)} hours of "${nodeA.data.title || 'Untitled'}"`,
+          rescheduleSuggestion: `Reschedule one of these deadlines to create a buffer period.`
+        });
       }
     }
   }

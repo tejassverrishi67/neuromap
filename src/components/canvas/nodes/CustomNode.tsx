@@ -40,12 +40,13 @@ export type CustomNodeData = {
 
 export type CustomNodeProps = NodeProps<Node<CustomNodeData>>;
 
-export default function CustomNode({ id, data, selected }: CustomNodeProps) {
-  const { setNodes } = useReactFlow();
+function CustomNode({ id, data, selected }: CustomNodeProps) {
+  const { setNodes, setEdges } = useReactFlow();
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Form states for full edits
   const [editTitle, setEditTitle] = useState(data.title);
+  const [editNodeType, setEditNodeType] = useState(data.nodeType);
   const [editContent, setEditContent] = useState(data.content || "");
   const [editStatus, setEditStatus] = useState(data.status || "todo");
   const [editPriority, setEditPriority] = useState(data.priority || "medium");
@@ -73,6 +74,7 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
 
   const handleDelete = () => {
     setNodes((prevNodes) => prevNodes.filter((n) => n.id !== id));
+    setEdges((prevEdges) => prevEdges.filter((e) => e.source !== id && e.target !== id));
     toast.success("Node deleted");
   };
 
@@ -95,12 +97,18 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
         ? undefined 
         : data.completedAt;
 
+    let progressVal = Number(editProgress);
+    if (editNodeType === "goal") {
+      progressVal = Math.max(0, Math.min(100, progressVal));
+    }
+
     updateNodeData({
+      nodeType: editNodeType,
       title: editTitle.trim(),
       content: editContent.trim(),
       status: editStatus as any,
       priority: editPriority as any,
-      progress: Number(editProgress),
+      progress: progressVal,
       dueDate: editDueDate,
       warningThreshold: Number(editWarningThreshold),
       tags: tagsArray,
@@ -222,6 +230,7 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
             if (open) {
               // Reset edit states to current node values
               setEditTitle(data.title);
+              setEditNodeType(data.nodeType);
               setEditContent(data.content || "");
               setEditStatus(data.status || "todo");
               setEditPriority(data.priority || "medium");
@@ -248,6 +257,21 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
 
                 <div className="space-y-3">
                   <div className="space-y-1">
+                    <Label htmlFor="node-type" className="text-[10px]">Node Type</Label>
+                    <Select value={editNodeType} onValueChange={(val) => val && setEditNodeType(val as any)}>
+                      <SelectTrigger className="bg-background border-border text-xs font-sans h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-border text-xs text-foreground font-mono">
+                        <SelectItem value="goal">Goal</SelectItem>
+                        <SelectItem value="task">Task</SelectItem>
+                        <SelectItem value="deadline">Deadline</SelectItem>
+                        <SelectItem value="note">Note</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
                     <Label htmlFor="node-title" className="text-[10px]">Title</Label>
                     <Input
                       id="node-title"
@@ -270,7 +294,7 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
                   </div>
 
                   {/* Goal Variant progress and date */}
-                  {data.nodeType === "goal" && (
+                  {editNodeType === "goal" && (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <Label htmlFor="goal-progress" className="text-[10px]">Progress (%)</Label>
@@ -289,7 +313,7 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
                         <Input
                           id="goal-due"
                           type="date"
-                          value={editDueDate.split("T")[0]}
+                          value={editDueDate ? editDueDate.split("T")[0] : ""}
                           onChange={(e) => setEditDueDate(e.target.value)}
                           className="bg-background border-border focus-visible:ring-emerald-500 font-sans text-xs"
                         />
@@ -298,7 +322,7 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
                   )}
 
                   {/* Task Variant status and priority */}
-                  {data.nodeType === "task" && (
+                  {editNodeType === "task" && (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <Label htmlFor="task-status" className="text-[10px]">Status</Label>
@@ -330,7 +354,7 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
                   )}
 
                   {/* Deadline Variant date and threshold */}
-                  {data.nodeType === "deadline" && (
+                  {editNodeType === "deadline" && (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <Label htmlFor="deadline-due" className="text-[10px]">Due Date/Time</Label>
@@ -356,7 +380,7 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
                   )}
 
                   {/* Note Variant tags */}
-                  {data.nodeType === "note" && (
+                  {editNodeType === "note" && (
                     <div className="space-y-1">
                       <Label htmlFor="note-tags" className="text-[10px]">Tags (Comma separated)</Label>
                       <Input
@@ -503,3 +527,23 @@ export default function CustomNode({ id, data, selected }: CustomNodeProps) {
     </Card>
   );
 }
+
+// React.memo optimization to skip rerendering unaffected nodes
+const MemoizedCustomNode = React.memo(CustomNode, (prevProps, nextProps) => {
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.selected === nextProps.selected &&
+    prevProps.data.title === nextProps.data.title &&
+    prevProps.data.content === nextProps.data.content &&
+    prevProps.data.status === nextProps.data.status &&
+    prevProps.data.priority === nextProps.data.priority &&
+    prevProps.data.progress === nextProps.data.progress &&
+    prevProps.data.dueDate === nextProps.data.dueDate &&
+    prevProps.data.warningThreshold === nextProps.data.warningThreshold &&
+    prevProps.data.nodeType === nextProps.data.nodeType &&
+    JSON.stringify(prevProps.data.tags) === JSON.stringify(nextProps.data.tags) &&
+    JSON.stringify(prevProps.data.conflicts) === JSON.stringify(nextProps.data.conflicts)
+  );
+});
+
+export default MemoizedCustomNode;

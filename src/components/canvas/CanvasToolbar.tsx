@@ -71,6 +71,7 @@ export default function CanvasToolbar({ saveStatus, onManualSave }: CanvasToolba
           onClick={() => addNode("goal")}
           size="sm"
           variant="ghost"
+          title="Spawn a Goal card at the center of the viewport"
           className="text-emerald-400 hover:bg-emerald-950/20 hover:text-emerald-300 font-mono text-xs gap-1 h-8 px-2.5 rounded-lg border border-transparent hover:border-emerald-900/30"
         >
           <Target className="w-3.5 h-3.5" /> Goal
@@ -79,6 +80,7 @@ export default function CanvasToolbar({ saveStatus, onManualSave }: CanvasToolba
           onClick={() => addNode("task")}
           size="sm"
           variant="ghost"
+          title="Spawn a Task item at the center of the viewport"
           className="text-sky-400 hover:bg-sky-950/20 hover:text-sky-300 font-mono text-xs gap-1 h-8 px-2.5 rounded-lg border border-transparent hover:border-sky-900/30"
         >
           <CheckSquare className="w-3.5 h-3.5" /> Task
@@ -87,6 +89,7 @@ export default function CanvasToolbar({ saveStatus, onManualSave }: CanvasToolba
           onClick={() => addNode("deadline")}
           size="sm"
           variant="ghost"
+          title="Spawn a Deadline alert at the center of the viewport"
           className="text-amber-400 hover:bg-amber-950/20 hover:text-amber-300 font-mono text-xs gap-1 h-8 px-2.5 rounded-lg border border-transparent hover:border-amber-900/30"
         >
           <Clock className="w-3.5 h-3.5" /> Deadline
@@ -95,6 +98,7 @@ export default function CanvasToolbar({ saveStatus, onManualSave }: CanvasToolba
           onClick={() => addNode("note")}
           size="sm"
           variant="ghost"
+          title="Spawn a Note card at the center of the viewport"
           className="text-purple-400 hover:bg-purple-950/20 hover:text-purple-300 font-mono text-xs gap-1 h-8 px-2.5 rounded-lg border border-transparent hover:border-purple-900/30"
         >
           <FileText className="w-3.5 h-3.5" /> Note
@@ -104,7 +108,10 @@ export default function CanvasToolbar({ saveStatus, onManualSave }: CanvasToolba
       {/* Sync/Status Section */}
       <div className="flex items-center gap-3">
         {/* Save Status Indicator */}
-        <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground bg-background/50 border border-border/40 px-2 py-1 rounded-lg">
+        <div 
+          className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground bg-background/50 border border-border/40 px-2 py-1 rounded-lg"
+          title="Real-time storage synchronization status"
+        >
           {saveStatus === "saving" && (
             <>
               <RefreshCw className="w-3 h-3 text-emerald-400 animate-spin" />
@@ -131,7 +138,7 @@ export default function CanvasToolbar({ saveStatus, onManualSave }: CanvasToolba
           size="icon"
           variant="outline"
           className="h-8 w-8 text-muted-foreground hover:text-emerald-400 border-border hover:border-emerald-950 hover:bg-emerald-950/10 rounded-lg transition-all"
-          title="Save Canvas Now"
+          title="Save and backup active workspace to storage immediately"
         >
           <Save className="w-3.5 h-3.5" />
         </Button>

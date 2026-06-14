@@ -34,7 +34,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import CustomNode from "./nodes/CustomNode";
 import CanvasToolbar from "./CanvasToolbar";
-import { updateCanvas } from "@/lib/storage";
+import { updateCanvas, getCanvasById } from "@/lib/storage";
 import { detectDeadlineConflicts, ConflictInfo } from "@/lib/conflictDetector";
 
 // Define node types outside the component to prevent re-creation on render
@@ -64,6 +64,10 @@ function FlowEditor({ canvas }: CanvasClientProps) {
   
   // Conflict panel collapse state
   const [isConflictsOpen, setIsConflictsOpen] = useState(false);
+
+  const [canvasName, setCanvasName] = useState(canvas.name);
+  const [canvasDesc, setCanvasDesc] = useState(canvas.description || "");
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
 
   // Track if initial load is complete to avoid autosaving initial data
   const isLoadedRef = useRef(false);
@@ -272,8 +276,77 @@ function FlowEditor({ canvas }: CanvasClientProps) {
     toast.info(`Centered on: "${node.data.title || 'Untitled'}"`);
   }, [nodes, setNodes, reactFlowInstance]);
 
+  // Synchronize canvas across open browser tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === `neuromap_backup_${canvas._id}` || e.key === "neuromap_canvases_store") {
+        async function reload() {
+          const data = await getCanvasById(canvas._id);
+          if (data) {
+            if (data.nodes) setNodes(data.nodes);
+            if (data.edges) setEdges(data.edges);
+            if (data.viewport) reactFlowInstance.setViewport(data.viewport);
+            if (data.name) setCanvasName(data.name);
+            if (data.description !== undefined) setCanvasDesc(data.description);
+          }
+        }
+        reload();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [canvas._id, setNodes, setEdges, reactFlowInstance]);
+
+  // Handle click on canvas pane; spawn note node if it is a double-click
+  const onPaneClick = useCallback(
+    (event: React.MouseEvent) => {
+      // Check if it is a double click (click count === 2)
+      if (event.detail !== 2) return;
+
+      const target = event.target as HTMLElement;
+      if (target.closest(".react-flow__node") || target.closest(".z-30") || target.closest("header")) return;
+
+      const pane = document.querySelector(".react-flow__pane");
+      if (!pane) return;
+      const rect = pane.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const viewport = reactFlowInstance.getViewport();
+      const projectedX = (x - viewport.x) / viewport.zoom;
+      const projectedY = (y - viewport.y) / viewport.zoom;
+
+      const id = `note-${Date.now()}`;
+      const newNode = {
+        id,
+        type: "customNode",
+        position: { x: projectedX - 144, y: projectedY - 100 },
+        data: {
+          nodeType: "note" as const,
+          title: "New Note",
+          content: "Double-clicked to create.",
+          tags: []
+        }
+      };
+
+      setNodes((nds) => nds.concat(newNode as any));
+      toast.success("Created note node at cursor");
+    },
+    [reactFlowInstance, setNodes]
+  );
+
+  // Clean up connected edges when nodes are deleted
+  const onNodesDelete = useCallback(
+    (deletedNodes: Node[]) => {
+      const deletedIds = new Set(deletedNodes.map((n) => n.id));
+      setEdges((eds) => eds.filter((e) => !deletedIds.has(e.source) && !deletedIds.has(e.target)));
+      toast.success(`Removed connected paths for deleted nodes`);
+    },
+    [setEdges]
+  );
+
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+    <div className="flex-1 flex flex-col h-full overflow-hidden relative">
       {/* Top Header Controls Bar */}
       <header className="h-16 border-b border-border bg-card/65 backdrop-blur-md flex items-center justify-between px-6 z-20 shrink-0">
         <div className="flex items-center gap-3">
@@ -282,10 +355,57 @@ function FlowEditor({ canvas }: CanvasClientProps) {
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-sm font-semibold text-foreground tracking-wide font-mono">{canvas.name}</h1>
-            <p className="text-[10px] text-muted-foreground truncate max-w-[240px] md:max-w-xs">{canvas.description || "Interactive Visual Workspace"}</p>
-          </div>
+          {isEditingMetadata ? (
+            <div className="flex items-center gap-2 nodrag">
+              <input
+                type="text"
+                value={canvasName}
+                onChange={(e) => setCanvasName(e.target.value)}
+                placeholder="Canvas name"
+                className="text-xs font-semibold text-foreground font-mono bg-background border border-border rounded px-2 py-1 h-8 focus:outline-none focus:border-emerald-500 w-44"
+                autoFocus
+              />
+              <input
+                type="text"
+                value={canvasDesc}
+                onChange={(e) => setCanvasDesc(e.target.value)}
+                placeholder="Description"
+                className="text-[10px] text-muted-foreground font-mono bg-background border border-border rounded px-2 py-1 h-8 focus:outline-none focus:border-emerald-500 w-64"
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={async () => {
+                  if (!canvasName.trim()) {
+                    toast.error("Name is required");
+                    return;
+                  }
+                  setIsEditingMetadata(false);
+                  try {
+                    await updateCanvas(canvas._id, {
+                      name: canvasName.trim(),
+                      description: canvasDesc.trim()
+                    });
+                    toast.success("Workspace properties updated");
+                  } catch (e) {
+                    toast.error("Failed to save workspace properties");
+                  }
+                }}
+                className="text-xs font-mono text-emerald-400 hover:text-emerald-300"
+              >
+                Save
+              </Button>
+            </div>
+          ) : (
+            <div
+              className="cursor-pointer hover:bg-muted/10 p-1.5 rounded transition-all flex flex-col min-w-0"
+              onClick={() => setIsEditingMetadata(true)}
+              title="Click to edit workspace properties"
+            >
+              <h1 className="text-sm font-semibold text-foreground tracking-wide font-mono truncate max-w-[200px] md:max-w-xs">{canvasName}</h1>
+              <p className="text-[10px] text-muted-foreground truncate max-w-[240px] md:max-w-xs">{canvasDesc || "Interactive Visual Workspace"}</p>
+            </div>
+          )}
         </div>
 
         {/* Sync Info Header */}
@@ -302,6 +422,40 @@ function FlowEditor({ canvas }: CanvasClientProps) {
             </Button>
           )}
           
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              try {
+                const dataToExport = {
+                  name: canvasName,
+                  description: canvasDesc,
+                  nodes,
+                  edges,
+                  viewport: reactFlowInstance.getViewport(),
+                  exportVersion: "1.0",
+                  exportedAt: new Date().toISOString()
+                };
+                const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `neuromap_canvas_${canvasName.toLowerCase().replace(/\s+/g, "_")}_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                toast.success("Canvas exported successfully!");
+              } catch (e) {
+                toast.error("Failed to export canvas");
+              }
+            }}
+            className="text-xs font-mono h-8 border border-border/40 hover:border-emerald-900/50 bg-background/20 gap-1.5 mr-1.5"
+            title="Download canvas JSON backup"
+          >
+            <HardDriveDownload className="w-3.5 h-3.5" /> Export
+          </Button>
+
           <Button
             size="sm"
             variant="ghost"
@@ -326,6 +480,10 @@ function FlowEditor({ canvas }: CanvasClientProps) {
           fitView={nodes.length > 0 ? false : true} // Use saved viewport coordinates or auto-fit if empty
           minZoom={0.15}
           maxZoom={3.5}
+          onPaneClick={onPaneClick}
+          zoomOnDoubleClick={false}
+          panActivationKeyCode="Space"
+          onNodesDelete={onNodesDelete}
         >
           <Background color="#10b981" gap={20} size={1} />
           <Controls showInteractive={false} className="left-4 bottom-4 md:left-4" />

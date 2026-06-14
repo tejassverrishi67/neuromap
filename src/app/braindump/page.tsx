@@ -336,7 +336,7 @@ export default function BrainDumpPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-32">
+    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12 overflow-y-auto h-full">
       {/* Page Header */}
       <div className="border-b border-border pb-6">
         <h1 className="text-3xl font-bold tracking-tight font-mono text-emerald-400 flex items-center gap-3">

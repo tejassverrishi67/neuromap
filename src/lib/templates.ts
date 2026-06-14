@@ -7,6 +7,14 @@ export interface CanvasTemplate {
   edges: ICanvasEdge[];
 }
 
+// Helper to generate dynamic ISO strings for dates
+const relativeDate = (daysOffset: number, hoursOffset = 0) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  d.setHours(d.getHours() + hoursOffset);
+  return d.toISOString();
+};
+
 export const templates: Record<string, CanvasTemplate> = {
   "Career Roadmap": {
     name: "Career Roadmap",
@@ -21,7 +29,7 @@ export const templates: Record<string, CanvasTemplate> = {
           title: "SDE-2 at Tier-1 Tech",
           content: "Achieve mid-to-senior software engineer placement with target CTC & domain specialization by Q4 2026.",
           progress: 20,
-          dueDate: "2026-12-31"
+          dueDate: relativeDate(180)
         }
       },
       {
@@ -56,7 +64,7 @@ export const templates: Record<string, CanvasTemplate> = {
           nodeType: "deadline",
           title: "Portfolio & Resume Refactor",
           content: "Refactor portfolio site and tailor resume with key impact metrics.",
-          dueDate: "2026-09-01T00:00:00.000Z",
+          dueDate: relativeDate(90),
           warningThreshold: 72
         }
       },
@@ -78,20 +86,20 @@ export const templates: Record<string, CanvasTemplate> = {
       { id: "e-goal-deadline1", source: "goal-1", target: "deadline-1" }
     ]
   },
-  "DSA Tracker": {
-    name: "DSA Tracker",
+  "Placement Preparation": {
+    name: "Placement Preparation",
     description: "Organize your algorithmic study plan, tracking progress on LeetCode questions and weekly contest ratings.",
     nodes: [
       {
         id: "goal-1",
         type: "customNode",
-        position: { x: 250, y: 50 },
+        position: { x: 350, y: 50 },
         data: {
           nodeType: "goal",
           title: "Solve 300 LC Questions",
           content: "Complete 150 Easy, 120 Medium, and 30 Hard questions across key patterns (trees, graphs, DP, intervals).",
           progress: 45,
-          dueDate: "2026-08-31"
+          dueDate: relativeDate(90)
         }
       },
       {
@@ -109,7 +117,7 @@ export const templates: Record<string, CanvasTemplate> = {
       {
         id: "task-2",
         type: "customNode",
-        position: { x: 450, y: 250 },
+        position: { x: 350, y: 250 },
         data: {
           nodeType: "task",
           title: "Dynamic Programming Patterns",
@@ -119,37 +127,76 @@ export const templates: Record<string, CanvasTemplate> = {
         }
       },
       {
+        id: "task-3",
+        type: "customNode",
+        position: { x: 650, y: 250 },
+        data: {
+          nodeType: "task",
+          title: "System Design Mock Interviews",
+          content: "Conduct 5 mock interviews on key architectures (URL shortener, rate limiter, chat application).",
+          status: "todo",
+          priority: "medium"
+        }
+      },
+      {
+        id: "task-4",
+        type: "customNode",
+        position: { x: 950, y: 250 },
+        data: {
+          nodeType: "task",
+          title: "Behavioral Prep & STAR Method",
+          content: "Structure 8 core behavioral questions using the STAR framework. Align with leadership principles.",
+          status: "todo",
+          priority: "low"
+        }
+      },
+      {
         id: "deadline-1",
         type: "customNode",
-        position: { x: 250, y: 430 },
+        position: { x: 350, y: 450 },
         data: {
           nodeType: "deadline",
           title: "Weekly Contest Target: <2000",
           content: "Participate in 3 consecutive contests and keep rank below 2000.",
-          dueDate: "2026-07-15T10:00:00.000Z",
+          dueDate: relativeDate(30),
           warningThreshold: 24
         }
       },
       {
         id: "note-1",
         type: "customNode",
-        position: { x: 750, y: 120 },
+        position: { x: 350, y: 620 },
         data: {
           nodeType: "note",
           title: "Algorithm Cheat Sheets",
           content: "DP Memoization:\nInitialize memo array with -1.\nDFS helper state representation: dfs(index, count).\nSpace optimization templates.",
           tags: ["leetcode", "dsa", "notes"]
         }
+      },
+      {
+        id: "note-2",
+        type: "customNode",
+        position: { x: 650, y: 620 },
+        data: {
+          nodeType: "note",
+          title: "Mock Platforms",
+          content: "Use Pramp and Interviewing.io for scheduling technical mock interviews.",
+          tags: ["study", "mocks"]
+        }
       }
     ],
     edges: [
       { id: "e-goal-task1", source: "goal-1", target: "task-1" },
       { id: "e-goal-task2", source: "goal-1", target: "task-2" },
-      { id: "e-goal-deadline1", source: "goal-1", target: "deadline-1" }
+      { id: "e-goal-task3", source: "goal-1", target: "task-3" },
+      { id: "e-goal-task4", source: "goal-1", target: "task-4" },
+      { id: "e-goal-deadline1", source: "goal-1", target: "deadline-1" },
+      { id: "e-task2-note1", source: "task-2", target: "note-1" },
+      { id: "e-task3-note2", source: "task-3", target: "note-2" }
     ]
   },
-  "Semester Planner": {
-    name: "Semester Planner",
+  "Semester Planning": {
+    name: "Semester Planning",
     description: "Manage academic assignments, midterms, projects, and office hours to maintain high performance.",
     nodes: [
       {
@@ -161,7 +208,7 @@ export const templates: Record<string, CanvasTemplate> = {
           title: "Maintain 9.0+ CGPA",
           content: "Target straight-A grades. Maximize project scores and actively clear queries during office hours.",
           progress: 60,
-          dueDate: "2026-07-30"
+          dueDate: relativeDate(45)
         }
       },
       {
@@ -189,6 +236,18 @@ export const templates: Record<string, CanvasTemplate> = {
         }
       },
       {
+        id: "task-3",
+        type: "customNode",
+        position: { x: 750, y: 250 },
+        data: {
+          nodeType: "task",
+          title: "Database Systems Term Project",
+          content: "Designed and built relational schema with Node + PostgreSQL backend and indexes.",
+          status: "done",
+          priority: "medium"
+        }
+      },
+      {
         id: "deadline-1",
         type: "customNode",
         position: { x: 250, y: 430 },
@@ -196,14 +255,14 @@ export const templates: Record<string, CanvasTemplate> = {
           nodeType: "deadline",
           title: "Final Term Project Submission",
           content: "Submit clean repository, documentation, and 5-page report for Database Systems project.",
-          dueDate: "2026-06-30T18:00:00.000Z",
+          dueDate: relativeDate(15),
           warningThreshold: 48
         }
       },
       {
         id: "note-1",
         type: "customNode",
-        position: { x: 750, y: 120 },
+        position: { x: 50, y: 430 },
         data: {
           nodeType: "note",
           title: "Professor Contact Info",
@@ -215,11 +274,13 @@ export const templates: Record<string, CanvasTemplate> = {
     edges: [
       { id: "e-goal-task1", source: "goal-1", target: "task-1" },
       { id: "e-goal-task2", source: "goal-1", target: "task-2" },
-      { id: "e-goal-deadline1", source: "goal-1", target: "deadline-1" }
+      { id: "e-goal-task3", source: "goal-1", target: "task-3" },
+      { id: "e-goal-deadline1", source: "goal-1", target: "deadline-1" },
+      { id: "e-task1-note1", source: "task-1", target: "note-1" }
     ]
   },
-  "Hackathon Planner": {
-    name: "Hackathon Planner",
+  "Hackathon Planning": {
+    name: "Hackathon Planning",
     description: "Organize feature scoping, rapid prototyping, and submission timelines for high-pressure hackathons.",
     nodes: [
       {
@@ -231,7 +292,7 @@ export const templates: Record<string, CanvasTemplate> = {
           title: "Deliver Working MVP",
           content: "Build fully functional Next.js + React Flow MVP with persistence and zero console errors.",
           progress: 15,
-          dueDate: "2026-06-14"
+          dueDate: relativeDate(3)
         }
       },
       {
@@ -259,6 +320,18 @@ export const templates: Record<string, CanvasTemplate> = {
         }
       },
       {
+        id: "task-3",
+        type: "customNode",
+        position: { x: 750, y: 250 },
+        data: {
+          nodeType: "task",
+          title: "Design Slide Pitch & Video Demo",
+          content: "Create interactive Figma slide templates. Record a high-resolution 2-minute demo video.",
+          status: "todo",
+          priority: "medium"
+        }
+      },
+      {
         id: "deadline-1",
         type: "customNode",
         position: { x: 250, y: 430 },
@@ -266,14 +339,14 @@ export const templates: Record<string, CanvasTemplate> = {
           nodeType: "deadline",
           title: "Devpost Submission Deadline",
           content: "Upload video demo (max 2 min), repository link, and project overview description.",
-          dueDate: "2026-06-14T09:00:00.000Z",
-          warningThreshold: 12
+          dueDate: relativeDate(0, 12), // due in 12 hours
+          warningThreshold: 24
         }
       },
       {
         id: "note-1",
         type: "customNode",
-        position: { x: 750, y: 120 },
+        position: { x: 750, y: 430 },
         data: {
           nodeType: "note",
           title: "Pitch Slide Outline",
@@ -285,7 +358,9 @@ export const templates: Record<string, CanvasTemplate> = {
     edges: [
       { id: "e-goal-task1", source: "goal-1", target: "task-1" },
       { id: "e-goal-task2", source: "goal-1", target: "task-2" },
-      { id: "e-goal-deadline1", source: "goal-1", target: "deadline-1" }
+      { id: "e-goal-task3", source: "goal-1", target: "task-3" },
+      { id: "e-goal-deadline1", source: "goal-1", target: "deadline-1" },
+      { id: "e-task3-note1", source: "task-3", target: "note-1" }
     ]
   }
 };

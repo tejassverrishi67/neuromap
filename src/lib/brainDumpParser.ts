@@ -75,10 +75,14 @@ function parseRelativeDate(text: string): Date | null {
     return getNextDayOfWeek(dayMatch[2]);
   }
   
-  // Generic week days if "by/on" is missing but day name is present
-  const weekDays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  // Generic week days if "by/on" is missing but day name is present (using word boundaries to avoid false substring matches like "money" or "friend")
+  const weekDays = [
+    "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
+    "sun", "mon", "tue", "wed", "thu", "fri", "sat"
+  ];
   for (const day of weekDays) {
-    if (cleaned.includes(`by ${day}`) || cleaned.includes(`on ${day}`) || cleaned.includes(day)) {
+    const rx = new RegExp(`\\b${day}\\b`, 'i');
+    if (rx.test(cleaned)) {
       return getNextDayOfWeek(day);
     }
   }

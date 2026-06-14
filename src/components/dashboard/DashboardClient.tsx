@@ -139,6 +139,20 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
     const dayLabels = Array(7).fill("");
     const now = new Date();
     
+    // 1. Gather all completion timestamps in a single pass
+    const completedTimestamps: number[] = [];
+    canvases.forEach((c) => {
+      (c.nodes || []).forEach((n: any) => {
+        if (n.data?.nodeType === "task" && n.data?.status === "done") {
+          const compDateStr = n.data.completedAt || c.updatedAt || c.lastActivity;
+          if (compDateStr) {
+            completedTimestamps.push(new Date(compDateStr).getTime());
+          }
+        }
+      });
+    });
+    
+    // 2. Map timestamps to the 7-day buckets
     for (let i = 0; i < 7; i++) {
       const d = new Date();
       d.setDate(now.getDate() - (6 - i));
@@ -146,21 +160,16 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
       
       const dayStart = new Date(d);
       dayStart.setHours(0, 0, 0, 0);
+      const dayStartMs = dayStart.getTime();
+      
       const dayEnd = new Date(d);
       dayEnd.setHours(23, 59, 59, 999);
+      const dayEndMs = dayEnd.getTime();
       
-      canvases.forEach(c => {
-        (c.nodes || []).forEach((n: any) => {
-          if (n.data?.nodeType === "task" && n.data?.status === "done") {
-            const compDateStr = n.data.completedAt || c.updatedAt || c.lastActivity;
-            if (compDateStr) {
-              const compDate = new Date(compDateStr);
-              if (compDate >= dayStart && compDate <= dayEnd) {
-                dailyCounts[i]++;
-              }
-            }
-          }
-        });
+      completedTimestamps.forEach((ts) => {
+        if (ts >= dayStartMs && ts <= dayEndMs) {
+          dailyCounts[i]++;
+        }
       });
     }
     
@@ -237,7 +246,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
   };
 
   return (
-    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-32">
+    <div className="flex-1 flex flex-col p-6 md:p-8 space-y-6 md:space-y-8 pb-12 overflow-y-auto h-full">
       {/* Top Welcome Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
@@ -371,9 +380,9 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
           <CardContent className="space-y-3">
             {[
               { name: "Career Roadmap", desc: "SDE placement & resume milestones", icon: Trophy, color: "text-emerald-500 bg-emerald-950/45" },
-              { name: "DSA Tracker", desc: "Algorithmic study nodes & LC status", icon: Target, color: "text-sky-500 bg-sky-950/45" },
-              { name: "Semester Planner", desc: "Academics assignments & office hours", icon: Calendar, color: "text-amber-500 bg-amber-950/45" },
-              { name: "Hackathon Planner", desc: "Build MVP checklist & pitches", icon: Sparkles, color: "text-purple-500 bg-purple-950/45" }
+              { name: "Placement Preparation", desc: "Algorithmic study nodes & LC status", icon: Target, color: "text-sky-500 bg-sky-950/45" },
+              { name: "Semester Planning", desc: "Academics assignments & office hours", icon: Calendar, color: "text-amber-500 bg-amber-950/45" },
+              { name: "Hackathon Planning", desc: "Build MVP checklist & pitches", icon: Sparkles, color: "text-purple-500 bg-purple-950/45" }
             ].map((t) => (
               <button
                 key={t.name}

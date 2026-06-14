@@ -23,16 +23,93 @@ export interface CanvasData {
 
 const LOCAL_STORAGE_KEY = "neuromap_canvases_store";
 
-// Helper to load raw list from localStorage
+// Helper to load raw list from localStorage with validation and corruption recovery
 function loadRawCanvases(): CanvasData[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return seedDemoDataIfEmpty([]);
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      throw new Error("Stored canvases data is not an array");
+    }
+
+    // Validate individual item schemas
+    const validated = parsed.filter((c: any) => {
+      return (
+        c &&
+        typeof c === "object" &&
+        typeof c._id === "string" &&
+        typeof c.name === "string" &&
+        Array.isArray(c.nodes) &&
+        Array.isArray(c.edges)
+      );
+    });
+
+    if (validated.length === 0 && parsed.length > 0) {
+      throw new Error("All stored canvases failed schema validation");
+    }
+
+    return seedDemoDataIfEmpty(validated);
   } catch (e) {
-    console.error("Failed to load canvases from localStorage:", e);
-    return [];
+    console.error("Failed to load canvases from localStorage (corruption detected):", e);
+    // Backup corrupt raw data to avoid silent loss
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (raw) {
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_corrupt_backup`, raw);
+      }
+    } catch (err) {
+      console.error("Failed to write corruption backup:", err);
+    }
+    // Clear the corrupted key
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    return seedDemoDataIfEmpty([]);
   }
+}
+
+// Helper to seed standard templates when storage is empty
+function seedDemoDataIfEmpty(list: CanvasData[]): CanvasData[] {
+  if (list.length > 0) return list;
+
+  const now = new Date().toISOString();
+  const seededList: CanvasData[] = Object.keys(templates).map((key, index) => {
+    const t = templates[key];
+    const initialNodes = JSON.parse(JSON.stringify(t.nodes));
+    const initialEdges = JSON.parse(JSON.stringify(t.edges));
+
+    // Populate completedAt with recent staggered dates for tasks that are "done"
+    initialNodes.forEach((node: any) => {
+      if (node.data?.nodeType === "task") {
+        if (node.data.status === "done") {
+          node.data.completedAt = new Date(Date.now() - 86400000 * (index + 1)).toISOString();
+        }
+      }
+    });
+
+    return {
+      _id: `seeded-${key.toLowerCase().replace(/\s+/g, "-")}`,
+      name: t.name,
+      description: t.description,
+      nodes: initialNodes,
+      edges: initialEdges,
+      viewport: { x: 0, y: 0, zoom: 0.85 },
+      metadata: {
+        totalNodes: initialNodes.length,
+        totalGoals: initialNodes.filter((n: any) => n.data?.nodeType === "goal").length,
+        totalTasks: initialNodes.filter((n: any) => n.data?.nodeType === "task").length,
+        totalDeadlines: initialNodes.filter((n: any) => n.data?.nodeType === "deadline").length,
+        totalNotes: initialNodes.filter((n: any) => n.data?.nodeType === "note").length,
+      },
+      lastActivity: new Date(Date.now() - 3600000 * index).toISOString(),
+      createdAt: now,
+      updatedAt: now
+    };
+  });
+
+  saveRawCanvases(seededList);
+  return seededList;
 }
 
 // Helper to save raw list to localStorage
@@ -101,13 +178,15 @@ export async function createCanvas(name: string, description = "", templateName?
   return newCanvas;
 }
 
-// 4. Update canvas properties
+// 4. Update canvas properties (with optional metadata editing)
 export async function updateCanvas(
   id: string,
   data: {
-    nodes: any[];
-    edges: any[];
-    viewport: { x: number; y: number; zoom: number };
+    name?: string;
+    description?: string;
+    nodes?: any[];
+    edges?: any[];
+    viewport?: { x: number; y: number; zoom: number };
   }
 ): Promise<CanvasData> {
   await new Promise((r) => setTimeout(r, 50));
@@ -118,19 +197,25 @@ export async function updateCanvas(
   }
 
   const now = new Date().toISOString();
-  const nodes = data.nodes || [];
+  const nodes = data.nodes !== undefined ? data.nodes : list[idx].nodes || [];
+  const edges = data.edges !== undefined ? data.edges : list[idx].edges || [];
+  const viewport = data.viewport !== undefined ? data.viewport : list[idx].viewport || { x: 0, y: 0, zoom: 1 };
+  const name = data.name !== undefined ? data.name : list[idx].name;
+  const description = data.description !== undefined ? data.description : list[idx].description;
 
   list[idx] = {
     ...list[idx],
-    nodes: data.nodes,
-    edges: data.edges,
-    viewport: data.viewport,
+    name,
+    description,
+    nodes,
+    edges,
+    viewport,
     metadata: {
       totalNodes: nodes.length,
-      totalGoals: nodes.filter((n) => n.data?.nodeType === "goal").length,
-      totalTasks: nodes.filter((n) => n.data?.nodeType === "task").length,
-      totalDeadlines: nodes.filter((n) => n.data?.nodeType === "deadline").length,
-      totalNotes: nodes.filter((n) => n.data?.nodeType === "note").length,
+      totalGoals: nodes.filter((n: any) => n.data?.nodeType === "goal").length,
+      totalTasks: nodes.filter((n: any) => n.data?.nodeType === "task").length,
+      totalDeadlines: nodes.filter((n: any) => n.data?.nodeType === "deadline").length,
+      totalNotes: nodes.filter((n: any) => n.data?.nodeType === "note").length,
     },
     lastActivity: now,
     updatedAt: now
