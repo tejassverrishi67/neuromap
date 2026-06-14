@@ -29,7 +29,7 @@ function loadRawCanvases(): CanvasData[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!raw) return seedDemoDataIfEmpty([]);
+    if (!raw) return [];
 
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
@@ -52,7 +52,7 @@ function loadRawCanvases(): CanvasData[] {
       throw new Error("All stored canvases failed schema validation");
     }
 
-    return seedDemoDataIfEmpty(validated);
+    return validated;
   } catch (e) {
     console.error("Failed to load canvases from localStorage (corruption detected):", e);
     // Backup corrupt raw data to avoid silent loss
@@ -66,51 +66,8 @@ function loadRawCanvases(): CanvasData[] {
     }
     // Clear the corrupted key
     localStorage.removeItem(LOCAL_STORAGE_KEY);
-    return seedDemoDataIfEmpty([]);
+    return [];
   }
-}
-
-// Helper to seed standard templates when storage is empty
-function seedDemoDataIfEmpty(list: CanvasData[]): CanvasData[] {
-  if (list.length > 0) return list;
-
-  const now = new Date().toISOString();
-  const seededList: CanvasData[] = Object.keys(templates).map((key, index) => {
-    const t = templates[key];
-    const initialNodes = JSON.parse(JSON.stringify(t.nodes));
-    const initialEdges = JSON.parse(JSON.stringify(t.edges));
-
-    // Populate completedAt with recent staggered dates for tasks that are "done"
-    initialNodes.forEach((node: any) => {
-      if (node.data?.nodeType === "task") {
-        if (node.data.status === "done") {
-          node.data.completedAt = new Date(Date.now() - 86400000 * (index + 1)).toISOString();
-        }
-      }
-    });
-
-    return {
-      _id: `seeded-${key.toLowerCase().replace(/\s+/g, "-")}`,
-      name: t.name,
-      description: t.description,
-      nodes: initialNodes,
-      edges: initialEdges,
-      viewport: { x: 0, y: 0, zoom: 0.85 },
-      metadata: {
-        totalNodes: initialNodes.length,
-        totalGoals: initialNodes.filter((n: any) => n.data?.nodeType === "goal").length,
-        totalTasks: initialNodes.filter((n: any) => n.data?.nodeType === "task").length,
-        totalDeadlines: initialNodes.filter((n: any) => n.data?.nodeType === "deadline").length,
-        totalNotes: initialNodes.filter((n: any) => n.data?.nodeType === "note").length,
-      },
-      lastActivity: new Date(Date.now() - 3600000 * index).toISOString(),
-      createdAt: now,
-      updatedAt: now
-    };
-  });
-
-  saveRawCanvases(seededList);
-  return seededList;
 }
 
 // Helper to save raw list to localStorage

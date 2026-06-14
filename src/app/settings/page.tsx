@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { 
   Settings, 
-  Database, 
   Keyboard, 
   HardDrive, 
   ShieldCheck, 
@@ -13,13 +12,23 @@ import {
   Sun,
   Moon,
   Monitor,
-  Palette
+  Palette,
+  AlertTriangle,
+  Trash2
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -29,12 +38,32 @@ export default function SettingsPage() {
     setMounted(true);
   }, []);
 
-  const connectionStateString = "Development Mode";
-  const databaseName = "Local Storage (Sandbox)";
-  const host = "Browser Cache";
-
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
+
+  const handleClearData = () => {
+    if (typeof window === "undefined") return;
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith("neuromap") || key === "theme")) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      toast.success("All NeuroMap data has been successfully cleared.");
+      setIsClearConfirmOpen(false);
+      
+      // Force page reload to home to reset state
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+    } catch {
+      toast.error("Failed to clear data.");
+    }
+  };
 
   const shortcuts = [
     { keys: ["Double Click Pane"], desc: "Spawns note node at cursor" },
@@ -184,45 +213,33 @@ export default function SettingsPage() {
           <Settings className="w-8 h-8 text-primary" /> Settings & Config
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Review system database configuration state, key binds, and visual mapping parameters.
+          Review application configuration, key binds, and customize themes or clear workspace data.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Database Monitor Card */}
-        <Card className="bg-card/40 border-border backdrop-blur-sm shadow-xl flex flex-col justify-between">
+        {/* Danger Zone Card */}
+        <Card className="bg-card/40 border-urgent-border backdrop-blur-sm shadow-xl flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="font-mono text-base text-primary flex items-center gap-2">
-              <Database className="w-5 h-5 text-primary" /> Storage Sandbox Status
+            <CardTitle className="font-mono text-base text-urgent-text flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-urgent-text" /> Danger Zone
             </CardTitle>
             <CardDescription className="text-xs">
-              Diagnostics for active second brain storage providers.
+              Permanently clear application workspaces and reset configurations.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 font-mono text-xs">
-            <div className="flex justify-between items-center py-2 border-b border-border/40">
-              <span className="text-muted-foreground">Storage Adapter</span>
-              <Badge className="bg-deadline-bg text-deadline-text border border-deadline-border">
-                {connectionStateString}
-              </Badge>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-border/40">
-              <span className="text-muted-foreground">Target Storage</span>
-              <span className="text-foreground font-semibold">{databaseName}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-border/40">
-              <span className="text-muted-foreground">Host Sandbox</span>
-              <span className="text-foreground truncate max-w-[180px]">{host}</span>
-            </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-muted-foreground">Local Redundancy Engine</span>
-              <span className="text-primary font-semibold flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4 text-primary" /> Active LocalStorage
-              </span>
-            </div>
+          <CardContent className="space-y-4 text-xs">
+            <p className="text-muted-foreground leading-normal">
+              Clearing all data will permanently remove all your custom canvases, brain dumps, and node history from local cache and reset the application to its clean, empty first-launch state.
+            </p>
           </CardContent>
-          <CardFooter className="text-[10px] text-muted-foreground border-t border-border/40 pt-4">
-            Currently running in pure client-side sandbox mode (MongoDB skipped).
+          <CardFooter className="border-t border-urgent-border/30 pt-4">
+            <Button
+              onClick={() => setIsClearConfirmOpen(true)}
+              className="w-full bg-urgent-bg border border-urgent-border text-urgent-text hover:bg-urgent-bg/85 font-mono text-xs gap-2"
+            >
+              <Trash2 className="w-4 h-4" /> Clear All Data
+            </Button>
           </CardFooter>
         </Card>
 
@@ -384,6 +401,40 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Clear Data Confirmation Dialog */}
+      <Dialog open={isClearConfirmOpen} onOpenChange={setIsClearConfirmOpen}>
+        <DialogContent className="bg-card border-border text-foreground font-mono text-xs max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-urgent-text text-lg flex items-center gap-2">
+              Confirm Data Reset
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              This action is permanent and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-3 leading-normal font-sans text-xs">
+            Are you absolutely sure you want to clear all your workspaces, mindmaps, and parsed thoughts? The application will reset back to a completely empty state.
+          </div>
+          <DialogFooter className="pt-2 flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsClearConfirmOpen(false)}
+              className="hover:bg-muted/40 hover:text-foreground font-mono text-xs border border-transparent hover:border-border"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleClearData}
+              className="bg-urgent-bg text-urgent-text border border-urgent-border hover:bg-urgent-bg/80 font-mono text-xs"
+            >
+              Reset All Data
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

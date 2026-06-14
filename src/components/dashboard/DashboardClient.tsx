@@ -260,9 +260,6 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
             <h1 className="text-3xl font-bold tracking-tight font-mono text-primary">
               Visual Second Brain
             </h1>
-            <Badge className="bg-deadline-bg text-deadline-text border border-deadline-border font-mono text-[10px] py-0.5 px-2.5 shrink-0 select-none">
-              Development Mode - Local Storage
-            </Badge>
           </div>
           <p className="text-muted-foreground text-sm mt-1">
             Map out ideas, link milestones, track tasks, and configure your goals.
@@ -385,14 +382,14 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { name: "Career Roadmap", desc: "SDE placement & resume milestones", icon: Trophy, color: "text-goal-text bg-goal-bg border-goal-border", id: "seeded-career-roadmap" },
-              { name: "Placement Preparation", desc: "Algorithmic study nodes & LC status", icon: Target, color: "text-task-text bg-task-bg border-task-border", id: "seeded-placement-preparation" },
-              { name: "Semester Planning", desc: "Academics assignments & office hours", icon: Calendar, color: "text-deadline-text bg-deadline-bg border-deadline-border", id: "seeded-semester-planning" },
-              { name: "Hackathon Planning", desc: "Build MVP checklist & pitches", icon: Sparkles, color: "text-note-text bg-note-bg border-note-border", id: "seeded-hackathon-planning" }
+              { name: "Career Roadmap", desc: "SDE placement & resume milestones", icon: Trophy, color: "text-goal-text bg-goal-bg border-goal-border" },
+              { name: "Placement Preparation", desc: "Algorithmic study nodes & LC status", icon: Target, color: "text-task-text bg-task-bg border-task-border" },
+              { name: "Semester Planning", desc: "Academics assignments & office hours", icon: Calendar, color: "text-deadline-text bg-deadline-bg border-deadline-border" },
+              { name: "Hackathon Planning", desc: "Build MVP checklist & pitches", icon: Sparkles, color: "text-note-text bg-note-bg border-note-border" }
             ].map((t) => (
               <button
                 key={t.name}
-                onClick={() => router.push(`/canvas/${t.id}`)}
+                onClick={() => openCreateDialog(t.name)}
                 className="w-full text-left p-3 rounded-xl border border-border/60 hover:border-primary/30 bg-background/30 hover:bg-background/80 transition-all duration-200 flex items-center gap-3 group animate-fade-in"
               >
                 <div className={`p-2 rounded-lg border ${t.color} shrink-0 group-hover:scale-105 transition-transform`}>
@@ -813,7 +810,7 @@ export default function DashboardClient({ initialCanvases }: DashboardClientProp
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Are you sure you want to delete the canvas{" "}
-              <strong className="text-foreground">"{canvasToDelete?.name}"</strong>? This action is permanent and cannot be undone.
+              <strong className="text-foreground">&quot;{canvasToDelete?.name}&quot;</strong>? This action is permanent and cannot be undone.
             </DialogDescription>
           </DialogHeader>
 

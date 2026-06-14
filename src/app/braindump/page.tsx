@@ -46,21 +46,7 @@ export default function BrainDumpPage() {
 
   // Load dumps & canvases on mount
   useEffect(() => {
-    // Standard starting dumps
-    const initialDumps = [
-      {
-        id: "1",
-        text: "I need to finish DSA before placements, complete my hackathon MVP by Sunday, prepare for DBMS exam next week, and update my portfolio.",
-        date: "Just now",
-        parsed: false
-      },
-      {
-        id: "2",
-        text: "Read Chapter 4 of Alex Xu's system design book. Target SDE-2 promotion timeline is Q4 2026. Keep doing 2 mock interviews every week.",
-        date: "Yesterday",
-        parsed: true
-      }
-    ];
+    const initialDumps: any[] = [];
     
     try {
       const storedDumps = localStorage.getItem("neuromap_dumps_history");
